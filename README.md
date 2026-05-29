@@ -1,16 +1,125 @@
-# React + Vite
+# BillFlow - Billing Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern and responsive Billing Management System built using React.js and Vite.  
+This project helps businesses manage invoices, customers, products, payments, staff, and reports efficiently.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+# Features
 
-## React Compiler
+## Authentication
+- Manager Login
+- Cashier Login
+- Register Page
+- Role-based Access
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Dashboard
+- Revenue Overview
+- Invoice Statistics
+- Sales Analytics
+- Responsive Charts UI
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Customer Management
+- Add Customers
+- Edit Customers
+- Delete Customers
+- Search Customers
+
+---
+
+## Product Management
+- Add Products
+- Update Products
+- Delete Products
+- Product Pricing
+
+---
+
+## Billing System
+- Create Bills
+- Generate Invoices
+- Billing History
+- Invoice Summary
+
+---
+
+## Reports Page
+- Revenue Reports
+- Payment Reports
+- Sales Analytics
+- Download Reports
+
+---
+
+## Payments Page
+- Payment Tracking
+- Payment Status
+- View Payment Details
+- Responsive Dialog UI
+
+---
+
+## Staff Management
+- Add Staff Members
+- Employee Details
+- Role Management
+- Staff Status
+
+---
+
+## Settings
+- Profile Settings
+- Password Update
+- System Preferences
+
+---
+
+# Tech Stack
+
+- React.js
+- Vite
+- React Router DOM
+- React Icons
+- Inline CSS
+- LocalStorage
+
+---
+
+# Responsive Design
+
+- Mobile Responsive
+- Tablet Responsive
+- Desktop Responsive
+
+---
+
+# Folder Structure
+
+```bash
+src/
+│
+├── components/
+│   ├── layout/
+│   │   ├── Sidebar.jsx
+│   │   └── TopNav.jsx
+│
+├── pages/
+│   ├── LandingPage.jsx
+│   ├── LoginPage.jsx
+│   ├── RegisterPage.jsx
+│   ├── DashboardPage.jsx
+│   ├── CustomersPage.jsx
+│   ├── ProductsPage.jsx
+│   ├── BillingPage.jsx
+│   ├── ReportsPage.jsx
+│   ├── SettingsPage.jsx
+│   ├── InvoicesPage.jsx
+│   ├── PaymentsPage.jsx
+│   └── StaffPage.jsx
+│
+├── App.jsx
+└── main.jsx
