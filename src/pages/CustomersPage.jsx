@@ -1,6 +1,6 @@
 // src/pages/CustomersPage.jsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Sidebar from "../components/layout/Sidebar";
 import TopNav from "../components/layout/TopNav";
@@ -17,14 +17,21 @@ import {
 } from "react-icons/fa";
 
 function CustomersPage() {
-  const [showModal, setShowModal] =
-    useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const [editingId, setEditingId] = useState(null); // Track customer being edited
 
-  const [search, setSearch] =
-    useState("");
-
-  const [customers, setCustomers] =
-    useState([
+  // PERSISTENCE STATE WITH LOCALSTORAGE
+  const [customers, setCustomers] = useState(() => {
+    const savedCustomers = localStorage.getItem("dashboard_customers");
+    if (savedCustomers) {
+      try {
+        return JSON.parse(savedCustomers);
+      } catch (error) {
+        console.error("Error parsing local storage data", error);
+      }
+    }
+    return [
       {
         id: 1,
         name: "Arjun Kumar",
@@ -33,7 +40,6 @@ function CustomersPage() {
         location: "Chennai",
         status: "Active",
       },
-
       {
         id: 2,
         name: "Rahul Sharma",
@@ -42,7 +48,6 @@ function CustomersPage() {
         location: "Bangalore",
         status: "Inactive",
       },
-
       {
         id: 3,
         name: "Kavin Raj",
@@ -51,7 +56,6 @@ function CustomersPage() {
         location: "Hyderabad",
         status: "Active",
       },
-
       {
         id: 4,
         name: "Priya",
@@ -60,31 +64,55 @@ function CustomersPage() {
         location: "Mumbai",
         status: "Active",
       },
-    ]);
+    ];
+  });
 
-  const [formData, setFormData] =
-    useState({
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    status: "Active",
+  });
+
+  // SAVE TO LOCALSTORAGE ON STATE CHANGE
+  useEffect(() => {
+    localStorage.setItem("dashboard_customers", JSON.stringify(customers));
+  }, [customers]);
+
+  // FILTER
+  const filteredCustomers = customers.filter((customer) =>
+    customer.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // OPEN MODAL FOR ADDING NEW CUSTOMER
+  const openAddModal = () => {
+    setEditingId(null);
+    setFormData({
       name: "",
       email: "",
       phone: "",
       location: "",
       status: "Active",
     });
+    setShowModal(true);
+  };
 
-  // FILTER
+  // OPEN MODAL FOR EDITING EXISTING CUSTOMER
+  const handleEditClick = (customer) => {
+    setEditingId(customer.id);
+    setFormData({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      location: customer.location,
+      status: customer.status,
+    });
+    setShowModal(true);
+  };
 
-  const filteredCustomers =
-    customers.filter((customer) =>
-      customer.name
-        .toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
-    );
-
-  // ADD CUSTOMER
-
-  const handleAddCustomer = () => {
+  // SAVE OR UPDATE CUSTOMER DATA
+  const handleSaveCustomer = () => {
     if (
       !formData.name ||
       !formData.email ||
@@ -95,15 +123,24 @@ function CustomersPage() {
       return;
     }
 
-    setCustomers([
-      ...customers,
+    if (editingId !== null) {
+      // UPDATE FUNCTIONALITY
+      const updatedCustomers = customers.map((c) =>
+        c.id === editingId ? { ...c, ...formData } : c
+      );
+      setCustomers(updatedCustomers);
+    } else {
+      // ADD FUNCTIONALITY
+      setCustomers([
+        ...customers,
+        {
+          id: Date.now(),
+          ...formData,
+        },
+      ]);
+    }
 
-      {
-        id: Date.now(),
-        ...formData,
-      },
-    ]);
-
+    // RESET FORM STATE
     setFormData({
       name: "",
       email: "",
@@ -111,37 +148,24 @@ function CustomersPage() {
       location: "",
       status: "Active",
     });
-
+    setEditingId(null);
     setShowModal(false);
   };
 
   // DELETE
-
   const handleDelete = (id) => {
-    const updated =
-      customers.filter(
-        (customer) =>
-          customer.id !== id
-      );
-
+    const updated = customers.filter((customer) => customer.id !== id);
     setCustomers(updated);
   };
 
   // STATS
+  const activeCustomers = customers.filter(
+    (customer) => customer.status === "Active"
+  ).length;
 
-  const activeCustomers =
-    customers.filter(
-      (customer) =>
-        customer.status ===
-        "Active"
-    ).length;
-
-  const inactiveCustomers =
-    customers.filter(
-      (customer) =>
-        customer.status ===
-        "Inactive"
-    ).length;
+  const inactiveCustomers = customers.filter(
+    (customer) => customer.status === "Inactive"
+  ).length;
 
   return (
     <div
@@ -153,30 +177,17 @@ function CustomersPage() {
       }}
     >
       {/* SIDEBAR */}
-
       <Sidebar />
 
       {/* MAIN */}
-
-      <div
-        style={{
-          flex: 1,
-          minWidth: 0,
-        }}
-      >
+      <div style={{ flex: 1, minWidth: 0 }}>
         <TopNav title="Customers" />
 
-        <div
-          style={{
-            padding: "20px",
-          }}
-        >
+        <div style={{ padding: "20px" }}>
           {/* HEADER */}
-
           <div
             style={{
-              background:
-                "linear-gradient(to right,#4f46e5,#7c3aed)",
+              background: "linear-gradient(to right,#4f46e5,#7c3aed)",
               borderRadius: "24px",
               padding: "30px",
               color: "white",
@@ -185,115 +196,61 @@ function CustomersPage() {
           >
             <h1
               style={{
-                fontSize:
-                  "clamp(28px,5vw,42px)",
+                fontSize: "clamp(28px,5vw,42px)",
                 marginBottom: "10px",
               }}
             >
               Customer Management
             </h1>
-
-            <p
-              style={{
-                opacity: 0.9,
-              }}
-            >
-              Manage customer
-              information and track
-              business relationships
+            <p style={{ opacity: 0.9 }}>
+              Manage customer information and track business relationships
             </p>
           </div>
 
           {/* STATS */}
-
           <div
             style={{
               display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit,minmax(240px,1fr))",
+              gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
               gap: "18px",
               marginBottom: "20px",
             }}
           >
             {/* TOTAL */}
-
             <div style={cardStyle}>
               <div>
-                <p style={labelStyle}>
-                  Total Customers
-                </p>
-
-                <h2 style={valueStyle}>
-                  {customers.length}
-                </h2>
+                <p style={labelStyle}>Total Customers</p>
+                <h2 style={valueStyle}>{customers.length}</h2>
               </div>
-
-              <div
-                style={{
-                  ...iconBox,
-                  background:
-                    "#4f46e5",
-                }}
-              >
+              <div style={{ ...iconBox, background: "#4f46e5" }}>
                 <FaUsers />
               </div>
             </div>
 
             {/* ACTIVE */}
-
             <div style={cardStyle}>
               <div>
-                <p style={labelStyle}>
-                  Active
-                </p>
-
-                <h2 style={valueStyle}>
-                  {
-                    activeCustomers
-                  }
-                </h2>
+                <p style={labelStyle}>Active</p>
+                <h2 style={valueStyle}>{activeCustomers}</h2>
               </div>
-
-              <div
-                style={{
-                  ...iconBox,
-                  background:
-                    "#10b981",
-                }}
-              >
+              <div style={{ ...iconBox, background: "#10b981" }}>
                 <FaUserPlus />
               </div>
             </div>
 
             {/* INACTIVE */}
-
             <div style={cardStyle}>
               <div>
-                <p style={labelStyle}>
-                  Inactive
-                </p>
-
-                <h2 style={valueStyle}>
-                  {
-                    inactiveCustomers
-                  }
-                </h2>
+                <p style={labelStyle}>Inactive</p>
+                <h2 style={valueStyle}>{inactiveCustomers}</h2>
               </div>
-
-              <div
-                style={{
-                  ...iconBox,
-                  background:
-                    "#ef4444",
-                }}
-              >
+              <div style={{ ...iconBox, background: "#ef4444" }}>
                 <FaUsers />
               </div>
             </div>
           </div>
 
           {/* CUSTOMER TABLE */}
-
           <div
             style={{
               background: "white",
@@ -303,12 +260,10 @@ function CustomersPage() {
             }}
           >
             {/* TOP */}
-
             <div
               style={{
                 display: "flex",
-                justifyContent:
-                  "space-between",
+                justifyContent: "space-between",
                 alignItems: "center",
                 flexWrap: "wrap",
                 gap: "12px",
@@ -316,327 +271,194 @@ function CustomersPage() {
               }}
             >
               {/* SEARCH */}
-
               <div
                 style={{
-                  position:
-                    "relative",
+                  position: "relative",
                   width: "100%",
                   maxWidth: "320px",
                 }}
               >
                 <FaSearch
                   style={{
-                    position:
-                      "absolute",
+                    position: "absolute",
                     top: "50%",
                     left: "14px",
-                    transform:
-                      "translateY(-50%)",
+                    transform: "translateY(-50%)",
                     color: "#9ca3af",
                   }}
                 />
-
                 <input
                   type="text"
                   placeholder="Search customer..."
                   value={search}
-                  onChange={(e) =>
-                    setSearch(
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => setSearch(e.target.value)}
                   style={{
                     width: "100%",
-                    padding:
-                      "14px 14px 14px 42px",
-                    borderRadius:
-                      "14px",
-                    border:
-                      "1px solid #d1d5db",
+                    padding: "14px 14px 14px 42px",
+                    borderRadius: "14px",
+                    border: "1px solid #d1d5db",
                     outline: "none",
                     fontSize: "15px",
-                    boxSizing:
-                      "border-box",
+                    boxSizing: "border-box",
                   }}
                 />
               </div>
 
-              {/* BUTTON */}
-
-              <button
-                onClick={() =>
-                  setShowModal(true)
-                }
-                style={addBtn}
-              >
+              {/* ADD CUSTOMER BUTTON */}
+              <button onClick={openAddModal} style={addBtn}>
                 <FaUserPlus />
                 Add Customer
               </button>
             </div>
 
             {/* TABLE */}
-
             <table
               style={{
                 width: "100%",
                 minWidth: "950px",
-                borderCollapse:
-                  "collapse",
+                borderCollapse: "collapse",
               }}
             >
               <thead>
-                <tr
-                  style={{
-                    background:
-                      "#f9fafb",
-                  }}
-                >
-                  <th style={thStyle}>
-                    Name
-                  </th>
-
-                  <th style={thStyle}>
-                    Email
-                  </th>
-
-                  <th style={thStyle}>
-                    Phone
-                  </th>
-
-                  <th style={thStyle}>
-                    Location
-                  </th>
-
-                  <th style={thStyle}>
-                    Status
-                  </th>
-
-                  <th style={thStyle}>
-                    Actions
-                  </th>
+                <tr style={{ background: "#f9fafb" }}>
+                  <th style={thStyle}>Name</th>
+                  <th style={thStyle}>Email</th>
+                  <th style={thStyle}>Phone</th>
+                  <th style={thStyle}>Location</th>
+                  <th style={thStyle}>Status</th>
+                  <th style={thStyle}>Actions</th>
                 </tr>
               </thead>
-
               <tbody>
-                {filteredCustomers.map(
-                  (
-                    customer,
-                    index
-                  ) => (
-                    <tr key={index}>
-                      {/* NAME */}
-
-                      <td style={tdStyle}>
+                {filteredCustomers.map((customer, index) => (
+                  <tr key={customer.id || index}>
+                    {/* NAME */}
+                    <td style={tdStyle}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
                         <div
                           style={{
-                            display:
-                              "flex",
-                            alignItems:
-                              "center",
-                            gap: "12px",
+                            width: "45px",
+                            height: "45px",
+                            borderRadius: "50%",
+                            background: "#4f46e5",
+                            color: "white",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            fontWeight: "600",
                           }}
                         >
-                          <div
-                            style={{
-                              width:
-                                "45px",
-                              height:
-                                "45px",
-                              borderRadius:
-                                "50%",
-                              background:
-                                "#4f46e5",
-                              color:
-                                "white",
-                              display:
-                                "flex",
-                              justifyContent:
-                                "center",
-                              alignItems:
-                                "center",
-                              fontWeight:
-                                "600",
-                            }}
-                          >
-                            {customer.name.charAt(
-                              0
-                            )}
-                          </div>
-
-                          <span>
-                            {
-                              customer.name
-                            }
-                          </span>
+                          {customer.name ? customer.name.charAt(0) : "C"}
                         </div>
-                      </td>
+                        <span>{customer.name}</span>
+                      </div>
+                    </td>
 
-                      {/* EMAIL */}
+                    {/* EMAIL */}
+                    <td style={tdStyle}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <FaEnvelope style={{ color: "#6b7280" }} />
+                        {customer.email}
+                      </div>
+                    </td>
 
-                      <td style={tdStyle}>
-                        <div
-                          style={{
-                            display:
-                              "flex",
-                            alignItems:
-                              "center",
-                            gap: "8px",
-                          }}
+                    {/* PHONE */}
+                    <td style={tdStyle}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <FaPhoneAlt style={{ color: "#6b7280" }} />
+                        {customer.phone}
+                      </div>
+                    </td>
+
+                    {/* LOCATION */}
+                    <td style={tdStyle}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <FaMapMarkerAlt style={{ color: "#ef4444" }} />
+                        {customer.location}
+                      </div>
+                    </td>
+
+                    {/* STATUS */}
+                    <td style={tdStyle}>
+                      <span
+                        style={{
+                          background:
+                            customer.status === "Active"
+                              ? "#dcfce7"
+                              : "#fee2e2",
+                          color:
+                            customer.status === "Active"
+                              ? "#166534"
+                              : "#991b1b",
+                          padding: "6px 14px",
+                          borderRadius: "20px",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {customer.status}
+                      </span>
+                    </td>
+
+                    {/* ACTIONS */}
+                    <td style={tdStyle}>
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        {/* EDIT BUTTON (NOW FUNCTIONAL) */}
+                        <button
+                          onClick={() => handleEditClick(customer)}
+                          style={editBtn}
                         >
-                          <FaEnvelope
-                            style={{
-                              color:
-                                "#6b7280",
-                            }}
-                          />
+                          <FaEdit />
+                        </button>
 
-                          {
-                            customer.email
-                          }
-                        </div>
-                      </td>
-
-                      {/* PHONE */}
-
-                      <td style={tdStyle}>
-                        <div
-                          style={{
-                            display:
-                              "flex",
-                            alignItems:
-                              "center",
-                            gap: "8px",
-                          }}
+                        {/* DELETE */}
+                        <button
+                          onClick={() => handleDelete(customer.id)}
+                          style={deleteBtn}
                         >
-                          <FaPhoneAlt
-                            style={{
-                              color:
-                                "#6b7280",
-                            }}
-                          />
-
-                          {
-                            customer.phone
-                          }
-                        </div>
-                      </td>
-
-                      {/* LOCATION */}
-
-                      <td style={tdStyle}>
-                        <div
-                          style={{
-                            display:
-                              "flex",
-                            alignItems:
-                              "center",
-                            gap: "8px",
-                          }}
-                        >
-                          <FaMapMarkerAlt
-                            style={{
-                              color:
-                                "#ef4444",
-                            }}
-                          />
-
-                          {
-                            customer.location
-                          }
-                        </div>
-                      </td>
-
-                      {/* STATUS */}
-
-                      <td style={tdStyle}>
-                        <span
-                          style={{
-                            background:
-                              customer.status ===
-                              "Active"
-                                ? "#dcfce7"
-                                : "#fee2e2",
-
-                            color:
-                              customer.status ===
-                              "Active"
-                                ? "#166534"
-                                : "#991b1b",
-
-                            padding:
-                              "6px 14px",
-
-                            borderRadius:
-                              "20px",
-
-                            fontSize:
-                              "14px",
-
-                            fontWeight:
-                              "600",
-                          }}
-                        >
-                          {
-                            customer.status
-                          }
-                        </span>
-                      </td>
-
-                      {/* ACTIONS */}
-
-                      <td style={tdStyle}>
-                        <div
-                          style={{
-                            display:
-                              "flex",
-                            gap: "10px",
-                          }}
-                        >
-                          {/* EDIT */}
-
-                          <button
-                            style={
-                              editBtn
-                            }
-                          >
-                            <FaEdit />
-                          </button>
-
-                          {/* DELETE */}
-
-                          <button
-                            onClick={() =>
-                              handleDelete(
-                                customer.id
-                              )
-                            }
-                            style={
-                              deleteBtn
-                            }
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                )}
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      {/* MODAL */}
-
+      {/* MODAL (HANDLES BOTH ADD & EDIT) */}
       {showModal && (
         <div
           style={{
             position: "fixed",
             inset: 0,
-            background:
-              "rgba(0,0,0,0.5)",
+            background: "rgba(0,0,0,0.5)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -655,11 +477,8 @@ function CustomersPage() {
             }}
           >
             {/* CLOSE */}
-
             <button
-              onClick={() =>
-                setShowModal(false)
-              }
+              onClick={() => setShowModal(false)}
               style={{
                 position: "absolute",
                 top: "15px",
@@ -676,25 +495,17 @@ function CustomersPage() {
               X
             </button>
 
-            <h2
-              style={{
-                marginBottom: "20px",
-              }}
-            >
-              Add Customer
+            <h2 style={{ marginBottom: "20px" }}>
+              {editingId !== null ? "Edit Customer" : "Add Customer"}
             </h2>
 
             {/* INPUTS */}
-
             <input
               type="text"
               placeholder="Customer Name"
               value={formData.name}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  name: e.target.value,
-                })
+                setFormData({ ...formData, name: e.target.value })
               }
               style={inputStyle}
             />
@@ -704,11 +515,7 @@ function CustomersPage() {
               placeholder="Email"
               value={formData.email}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  email:
-                    e.target.value,
-                })
+                setFormData({ ...formData, email: e.target.value })
               }
               style={inputStyle}
             />
@@ -718,11 +525,7 @@ function CustomersPage() {
               placeholder="Phone"
               value={formData.phone}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  phone:
-                    e.target.value,
-                })
+                setFormData({ ...formData, phone: e.target.value })
               }
               style={inputStyle}
             />
@@ -730,15 +533,9 @@ function CustomersPage() {
             <input
               type="text"
               placeholder="Location"
-              value={
-                formData.location
-              }
+              value={formData.location}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  location:
-                    e.target.value,
-                })
+                setFormData({ ...formData, location: e.target.value })
               }
               style={inputStyle}
             />
@@ -746,36 +543,23 @@ function CustomersPage() {
             <select
               value={formData.status}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  status:
-                    e.target.value,
-                })
+                setFormData({ ...formData, status: e.target.value })
               }
               style={inputStyle}
             >
-              <option>
-                Active
-              </option>
-
-              <option>
-                Inactive
-              </option>
+              <option>Active</option>
+              <option>Inactive</option>
             </select>
 
-            {/* BUTTON */}
-
+            {/* ACTION BUTTON */}
             <button
-              onClick={
-                handleAddCustomer
-              }
+              onClick={handleSaveCustomer}
               style={{
                 width: "100%",
                 padding: "15px",
                 border: "none",
                 borderRadius: "14px",
-                background:
-                  "#4f46e5",
+                background: "#4f46e5",
                 color: "white",
                 fontSize: "16px",
                 fontWeight: "600",
@@ -783,7 +567,7 @@ function CustomersPage() {
                 marginTop: "10px",
               }}
             >
-              Add Customer
+              {editingId !== null ? "Update Customer" : "Add Customer"}
             </button>
           </div>
         </div>
@@ -793,28 +577,18 @@ function CustomersPage() {
 }
 
 /* STYLES */
-
 const cardStyle = {
   background: "white",
   borderRadius: "20px",
   padding: "22px",
   display: "flex",
-  justifyContent:
-    "space-between",
+  justifyContent: "space-between",
   alignItems: "center",
-  boxShadow:
-    "0 4px 12px rgba(0,0,0,0.08)",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
 };
 
-const labelStyle = {
-  color: "#6b7280",
-  marginBottom: "8px",
-};
-
-const valueStyle = {
-  fontSize: "32px",
-  color: "#111827",
-};
+const labelStyle = { color: "#6b7280", marginBottom: "8px" };
+const valueStyle = { fontSize: "32px", color: "#111827" };
 
 const iconBox = {
   width: "60px",
@@ -865,7 +639,6 @@ const editBtn = {
   alignItems: "center",
   cursor: "pointer",
 };
-
 const deleteBtn = {
   width: "38px",
   height: "38px",
