@@ -639,7 +639,6 @@ const editBtn = {
   alignItems: "center",
   cursor: "pointer",
 };
-
 const deleteBtn = {
   width: "38px",
   height: "38px",

@@ -888,7 +888,6 @@ const cancelBtn = {
   cursor: "pointer",
   fontWeight: "600"
 };
-
 const deleteConfirmBtn = {
   flex: 1,
   padding: "12px",
