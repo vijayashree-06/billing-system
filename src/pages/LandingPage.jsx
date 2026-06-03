@@ -1,8 +1,6 @@
 // src/pages/LandingPage.jsx
-
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-
+import { motion } from "framer-motion";
 import {
   FaChartLine,
   FaFileInvoice,
@@ -12,6 +10,8 @@ import {
   FaCloud,
   FaArrowRight,
   FaCheckCircle,
+  FaBolt,
+  FaGlobe
 } from "react-icons/fa";
 
 function LandingPage() {
@@ -69,20 +69,69 @@ function LandingPage() {
     { value: "24/7", label: "Business Access" },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 25, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100, damping: 15 }
+    }
+  };
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#f8fafc",
+        background: "radial-gradient(circle at top right, #f1f5f9, #f8fafc)",
         overflowX: "hidden",
         fontFamily: "system-ui, -apple-system, sans-serif",
+        position: "relative"
       }}
     >
-      {/* Dynamic Style Injection for CSS 3D Flipping & Hover Effects */}
+      {/* Dynamic Animated Organic Background Graphics */}
+      <motion.div 
+        animate={{ y: [0, -20, 0], scale: [1, 1.03, 1] }}
+        transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
+        style={bgBlobLeft} 
+      />
+      <motion.div 
+        animate={{ y: [0, 20, 0], scale: [1, 1.05, 1] }}
+        transition={{ repeat: Infinity, duration: 9, ease: "easeInOut", delay: 1 }}
+        style={bgBlobRight} 
+      />
+
+      {/* Styled Glassmorphism, Flipping and Cursor Proximity Text Glow Enhancements */}
       <style>{`
+        /* Dynamic Cursor Proximity Glow Effects for Text Content */
+        .glow-text {
+          transition: text-shadow 0.4s ease, color 0.4s ease, filter 0.4s ease;
+          display: inline-block;
+        }
+        .glow-text:hover {
+          color: #4f46e5 !important;
+          text-shadow: 0 0 25px rgba(79, 70, 229, 0.6), 0 0 50px rgba(79, 70, 229, 0.3);
+          filter: drop-shadow(0 2px 8px rgba(79, 70, 229, 0.2));
+        }
+        .glow-accent {
+          transition: text-shadow 0.4s ease, color 0.4s ease;
+          display: inline-block;
+        }
+        .glow-accent:hover {
+          text-shadow: 0 0 30px rgba(56, 189, 248, 0.9), 0 0 60px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Card Layout System Framework */
         .flip-card {
           background-color: transparent;
-          height: 300px;
+          height: 310px;
           perspective: 1000px;
           cursor: pointer;
         }
@@ -91,7 +140,7 @@ function LandingPage() {
           width: 100%;
           height: 100%;
           text-align: center;
-          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
           transform-style: preserve-3d;
         }
         .flip-card:hover .flip-card-inner, .flip-card:focus-within .flip-card-inner {
@@ -106,263 +155,232 @@ function LandingPage() {
           border-radius: 24px;
           padding: 32px 24px;
           box-sizing: border-box;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
+        /* Glassmorphism Front Style */
         .flip-card-front {
-          background-color: white;
+          background-color: rgba(255, 255, 255, 0.45);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.6);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
         }
+        /* Rich Blue Gradient Back Style */
         .flip-card-back {
-          background-color: #1e293b;
+          background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
           color: white;
           transform: rotateY(180deg);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 15px 35px rgba(30, 64, 175, 0.25);
         }
       `}</style>
 
-      {/* NAVBAR */}
+      {/* FIXED GLASS NAVIGATION BAR (Right-Aligned Buttons) */}
       <nav
         style={{
           width: "100%",
-          padding: "18px 6%",
-          background: "white",
+          padding: "16px 6%",
+          background: "rgba(255, 255, 255, 0.75)",
+          backdropFilter: "blur(16px)",
+          webkitbackdropfilter: "blur(16px)",
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "space-between", 
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: "20px",
           boxSizing: "border-box",
           position: "sticky",
           top: 0,
           zIndex: 1000,
-          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+          borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.02)",
         }}
       >
-        <h1
-          style={{
-            fontSize: "30px",
-            fontWeight: "800",
-            color: "#4f46e5",
-            margin: 0,
-          }}
-        >
+        <h1 className="glow-text" style={{ fontSize: "28px", fontWeight: "800", color: "#4f46e5", margin: 0, letterSpacing: "-0.5px", cursor: "pointer" }}>
           BillFlow
         </h1>
 
-        <div style={{ display: "flex", gap: "14px", flexWrap: "wrap" }}>
-          <button onClick={() => navigate("/login")} style={loginBtn}>
+        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          <motion.button 
+            whileHover={{ scale: 1.03, color: "#4f46e5" }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/login")} 
+            style={loginBtn}
+          >
             Login
-          </button>
-          <button onClick={() => navigate("/register")} style={primaryBtn}>
+          </motion.button>
+          <motion.button 
+            whileHover={{ scale: 1.03, boxShadow: "0 8px 20px rgba(79, 70, 229, 0.25)" }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/register")} 
+            style={primaryBtn}
+          >
             Register
-          </button>
+          </motion.button>
         </div>
       </nav>
 
       {/* HERO SECTION */}
       <section
         style={{
-          padding: "80px 6% 60px 6%",
+          padding: "70px 6% 60px 6%",
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "50px",
+          gap: "60px",
           alignItems: "center",
+          position: "relative",
+          zIndex: 2
         }}
       >
-        {/* LEFT */}
-        <div>
+        {/* HERO LEFT */}
+        <motion.div
+          initial={{ x: -40, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <div
             style={{
-              background: "#eef2ff",
+              background: "linear-gradient(90deg, #eef2ff, #e0e7ff)",
               color: "#4f46e5",
               width: "fit-content",
-              padding: "10px 18px",
+              padding: "10px 20px",
               borderRadius: "30px",
               fontWeight: "600",
+              fontSize: "14px",
               marginBottom: "25px",
+              boxShadow: "0 2px 10px rgba(79, 70, 229, 0.05)"
             }}
           >
-            Modern Billing Solution
+            🚀 Modern Billing Solution
           </div>
 
           <h1
             style={{
-              fontSize: "clamp(42px, 6vw, 72px)",
+              fontSize: "clamp(44px, 5.5vw, 68px)",
               lineHeight: "1.1",
               fontWeight: "800",
               color: "#111827",
               marginBottom: "24px",
               marginTop: 0,
+              letterSpacing: "-0.02em"
             }}
           >
-            Smart Billing
+            <span className="glow-text" style={{ color: "#111827" }}>Smart Billing</span>
             <br />
-            Management
-            <span style={{ color: "#4f46e5" }}> System</span>
+            <span className="glow-text" style={{ color: "#111827" }}>Management</span>
+            <span className="glow-text" style={{ color: "#4f46e5" }}> System</span>
           </h1>
 
           <p
             style={{
               fontSize: "18px",
-              color: "#6b7280",
+              color: "#4b5563",
               lineHeight: "1.8",
-              marginBottom: "30px",
-              maxWidth: "650px",
+              marginBottom: "35px",
+              maxWidth: "600px",
             }}
           >
             Modern responsive billing platform for invoices, customers, payments, analytics and business management.
           </p>
 
           <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-            <button onClick={() => navigate("/register")} style={heroPrimaryBtn}>
+            <motion.button 
+              whileHover={{ scale: 1.03, boxShadow: "0 10px 25px rgba(79, 70, 229, 0.35)" }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate("/register")} 
+              style={heroPrimaryBtn}
+            >
               Get Started <FaArrowRight />
-            </button>
-            <button onClick={() => navigate("/login")} style={heroSecondaryBtn}>
+            </motion.button>
+            <motion.button 
+              whileHover={{ scale: 1.03, backgroundColor: "#f1f5f9" }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate("/login")} 
+              style={heroSecondaryBtn}
+            >
               Login
-            </button>
+            </motion.button>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "18px",
-              marginTop: "35px",
-            }}
-          >
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginTop: "45px" }}>
             {["Responsive UI", "Invoice Tracking", "Analytics Dashboard"].map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  color: "#374151",
-                  fontWeight: "500",
-                }}
-              >
+              <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px", color: "#374151", fontWeight: "500" }}>
                 <FaCheckCircle style={{ color: "#10b981" }} />
                 {item}
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* RIGHT */}
-        <div style={{ display: "flex", justifyContent: "center" }}>
+        {/* HERO RIGHT */}
+        <motion.div
+          initial={{ x: 40, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          style={{ display: "flex", justifyContent: "center" }}
+        >
           <div
             style={{
               width: "100%",
-              maxWidth: "520px",
-              background: "white",
-              borderRadius: "30px",
-              padding: "25px",
-              boxShadow: "0 10px 35px rgba(0,0,0,0.08)",
+              maxWidth: "500px",
+              background: "rgba(255, 255, 255, 0.4)",
+              backdropFilter: "blur(20px)",
+              webkitbackdropfilter: "blur(20px)",
+              borderRadius: "32px",
+              padding: "28px",
+              boxShadow: "0 20px 40px -15px rgba(0,0,0,0.05)",
+              border: "1px solid rgba(255, 255, 255, 0.6)"
             }}
           >
-            {/* STATS */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "16px",
-                marginBottom: "20px",
-              }}
-            >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "24px" }}>
               {stats.map((stat, index) => (
-                <div
-                  key={index}
-                  style={{
-                    background: "#f9fafb",
-                    padding: "20px",
-                    borderRadius: "18px",
-                  }}
+                <motion.div 
+                  whileHover={{ y: -4 }}
+                  key={index} 
+                  style={{ background: "rgba(255, 255, 255, 0.7)", padding: "20px", borderRadius: "20px", border: "1px solid rgba(255, 255, 255, 0.8)" }}
                 >
-                  <h2
-                    style={{
-                      color: "#4f46e5",
-                      fontSize: "28px",
-                      marginBottom: "8px",
-                      marginTop: 0,
-                    }}
-                  >
+                  <h2 style={{ color: "#4f46e5", fontSize: "28px", fontWeight: "700", marginBottom: "6px", marginTop: 0 }}>
                     {stat.value}
                   </h2>
-                  <p style={{ color: "#6b7280", margin: 0 }}>{stat.label}</p>
-                </div>
+                  <p style={{ color: "#6b7280", margin: 0, fontSize: "14px", fontWeight: "500" }}>{stat.label}</p>
+                </motion.div>
               ))}
             </div>
 
-            {/* CHART */}
-            <div
-              style={{
-                background: "#f9fafb",
-                borderRadius: "20px",
-                padding: "20px",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-end",
-                  height: "180px",
-                  gap: "12px",
-                }}
-              >
-                {[60, 90, 120, 80, 150].map((height, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div
+            <div style={{ background: "rgba(255, 255, 255, 0.5)", borderRadius: "24px", padding: "24px", border: "1px solid rgba(255, 255, 255, 0.6)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", height: "160px", gap: "12px" }}>
+                {[60, 95, 130, 80, 160].map((h, i) => (
+                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: `${h}px` }}
+                      transition={{ duration: 0.8, delay: 0.3 }}
                       style={{
                         width: "100%",
-                        maxWidth: "45px",
-                        height: `${height}px`,
-                        background: "linear-gradient(to top, #4f46e5, #a78bfa)",
-                        borderRadius: "12px 12px 0 0",
+                        maxWidth: "42px",
+                        background: "linear-gradient(to top, #4f46e5, #818cf8)",
+                        borderRadius: "8px 8px 0 0",
                       }}
                     />
-                    <span
-                      style={{
-                        marginTop: "10px",
-                        color: "#6b7280",
-                        fontWeight: "600",
-                      }}
-                    >
-                      {["Jan", "Feb", "Mar", "Apr", "May"][index]}
+                    <span style={{ marginTop: "10px", color: "#6b7280", fontSize: "13px", fontWeight: "600" }}>
+                      {["Jan", "Feb", "Mar", "Apr", "May"][i]}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* FEATURES SECTION (With Flip Cards) */}
-      <section style={{ padding: "40px 6% 80px 6%" }}>
-        <div style={{ textAlign: "center", marginBottom: "50px" }}>
-          <h2
-            style={{
-              fontSize: "clamp(34px, 5vw, 50px)",
-              marginBottom: "15px",
-              color: "#111827",
-              marginTop: 0,
-            }}
-          >
+      {/* FEATURES SECTION */}
+      <section style={{ padding: "60px 6% 80px 6%", position: "relative", zIndex: 2 }}>
+        <div style={{ textAlign: "center", marginBottom: "55px" }}>
+          <h2 className="glow-text" style={{ fontSize: "clamp(34px, 5vw, 48px)", fontWeight: "800", marginBottom: "15px", color: "#111827", marginTop: 0 }}>
             Powerful Features
           </h2>
           <p style={{ color: "#6b7280", fontSize: "18px", margin: 0 }}>
@@ -370,8 +388,11 @@ function LandingPage() {
           </p>
         </div>
 
-        {/* Responsive CSS Grid Container */}
-        <div
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
@@ -379,10 +400,9 @@ function LandingPage() {
           }}
         >
           {features.map((feature, index) => (
-            <div key={index} className="flip-card" tabIndex="0">
+            <motion.div variants={itemVariants} key={index} className="flip-card" tabIndex="0">
               <div className="flip-card-inner">
-                
-                {/* FRONT SIDE */}
+                {/* GLASSMORPHISM FRONT */}
                 <div className="flip-card-front">
                   <div
                     style={{
@@ -400,119 +420,181 @@ function LandingPage() {
                   >
                     {feature.icon}
                   </div>
-                  <h3
-                    style={{
-                      fontSize: "22px",
-                      marginBottom: "14px",
-                      color: "#111827",
-                      marginTop: 0,
-                    }}
-                  >
+                  <h3 style={{ fontSize: "21px", fontWeight: "700", marginBottom: "14px", color: "#1e293b", marginTop: 0 }}>
                     {feature.title}
                   </h3>
-                  <p style={{ color: "#6b7280", lineHeight: "1.6", fontSize: "15px", margin: 0 }}>
+                  <p style={{ color: "#4b5563", lineHeight: "1.6", fontSize: "15px", margin: 0 }}>
                     {feature.desc}
                   </p>
                 </div>
 
-                {/* BACK SIDE */}
+                {/* VIBRANT BLUE GRADIENT BACK */}
                 <div className="flip-card-back">
-                  <h3 style={{ fontSize: "20px", marginBottom: "12px", color: "#f8fafc", marginTop: 0 }}>
+                  <h3 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "12px", color: "#ffffff", marginTop: 0 }}>
                     More Details
                   </h3>
-                  <p style={{ color: "#cbd5e1", lineHeight: "1.6", fontSize: "14px", margin: 0 }}>
+                  <p style={{ color: "#e0e7ff", lineHeight: "1.6", fontSize: "14px", margin: 0, padding: "0 10px" }}>
                     {feature.backDesc}
                   </p>
                 </div>
-
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
-      {/* CTA SECTION */}
-      <section style={{ padding: "20px 6% 80px 6%" }}>
-        <div
+      {/* ATTRACTIVE ENTERPRISE CTA SECTION */}
+      <section style={{ padding: "20px 6% 90px 6%", position: "relative", zIndex: 2 }}>
+        <motion.div
+          initial={{ scale: 0.97, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          viewport={{ once: true }}
           style={{
-            background: "linear-gradient(to right, #4f46e5, #7c3aed)",
-            borderRadius: "32px",
-            padding: "60px 30px",
+            background: "linear-gradient(135deg, #312e81 0%, #4f46e5 50%, #1e40af 100%)",
+            borderRadius: "40px",
+            padding: "80px 40px",
             textAlign: "center",
             color: "white",
+            boxShadow: "0 30px 60px -15px rgba(79, 70, 229, 0.4)",
+            position: "relative",
+            overflow: "hidden"
           }}
         >
-          <h2 style={{ fontSize: "clamp(34px, 5vw, 54px)", marginBottom: "20px", marginTop: 0 }}>
-            Ready To Grow Your Business?
+          <div style={{
+            position: "absolute",
+            top: "-20%",
+            right: "-10%",
+            width: "400px",
+            height: "400px",
+            background: "radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)",
+            pointerEvents: "none"
+          }} />
+
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            background: "rgba(255, 255, 255, 0.1)",
+            backdropFilter: "blur(10px)",
+            padding: "8px 16px",
+            borderRadius: "30px",
+            fontSize: "14px",
+            fontWeight: "600",
+            letterSpacing: "0.5px",
+            marginBottom: "28px",
+            border: "1px solid rgba(255, 255, 255, 0.15)"
+          }}>
+            ⚡ Elevate Operations
+          </div>
+
+          <h2 style={{ 
+            fontSize: "clamp(36px, 5.5vw, 56px)", 
+            fontWeight: "800", 
+            marginBottom: "20px", 
+            marginTop: 0,
+            lineHeight: "1.2",
+            letterSpacing: "-0.02em"
+          }}>
+            <span className="glow-accent" style={{ color: "#ffffff" }}>Empower Your Enterprise</span> <br />
+            <span className="glow-accent" style={{ color: "#38bdf8" }}>Asset Flow Today</span>
           </h2>
-          <p
-            style={{
-              fontSize: "18px",
-              opacity: 0.9,
-              maxWidth: "750px",
-              margin: "0 auto 30px auto",
-              lineHeight: "1.8",
-            }}
-          >
-            Start managing invoices, customers and payments today.
+          
+          <p style={{ 
+            fontSize: "20px", 
+            color: "#e0e7ff", 
+            maxWidth: "700px", 
+            margin: "0 auto 40px auto", 
+            lineHeight: "1.8",
+            fontWeight: "400"
+          }}>
+            Join thousands of modern businesses accelerating cash cycles, eliminating discrepancies, and making operations seamless.
           </p>
-          <button
+
+          {/* Value Highlights Feature Grid */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "20px",
+            maxWidth: "800px",
+            margin: "0 auto 45px auto"
+          }}>
+            {[
+              { icon: <FaBolt style={{ color: "#38bdf8" }} />, text: "Instant Automated Reminders" },
+              { icon: <FaGlobe style={{ color: "#34d399" }} />, text: "Multirate Global Tax Structures" },
+              { icon: <FaCheckCircle style={{ color: "#a78bfa" }} />, text: "No Hidden Implementation Fees" }
+            ].map((item, idx) => (
+              <div key={idx} style={{
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(5px)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                padding: "16px",
+                borderRadius: "16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                textAlign: "left"
+              }}>
+                <div style={{ fontSize: "18px", display: "flex" }}>{item.icon}</div>
+                <span style={{ fontSize: "14px", fontWeight: "500", color: "#f1f5f9" }}>{item.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.25)" }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => navigate("/register")}
             style={{
-              padding: "16px 30px",
+              padding: "18px 44px",
               border: "none",
-              borderRadius: "16px",
-              background: "white",
+              borderRadius: "20px",
+              background: "#ffffff",
               color: "#4f46e5",
-              fontWeight: "700",
+              fontWeight: "800",
               fontSize: "16px",
               cursor: "pointer",
+              letterSpacing: "0.2px"
             }}
           >
-            Create Account
-          </button>
-        </div>
+            Create Your Free Account
+          </motion.button>
+        </motion.div>
       </section>
 
       {/* FOOTER */}
-      <footer
-        style={{
-          background: "#111827",
-          padding: "30px 6%",
-          textAlign: "center",
-          color: "#9ca3af",
-        }}
-      >
-        <h2 style={{ color: "white", marginBottom: "12px", marginTop: 0 }}>BillFlow</h2>
-        <p style={{ margin: 0 }}>Modern Billing Management System © 2026</p>
+      <footer style={{ background: "#0f172a", padding: "35px 6%", textAlign: "center", color: "#9ca3af", position: "relative", zIndex: 2 }}>
+        <h2 style={{ color: "white", marginBottom: "12px", marginTop: 0, fontWeight: "700" }}>BillFlow</h2>
+        <p style={{ margin: 0, fontSize: "14px" }}>Modern Billing Management System © 2026</p>
       </footer>
     </div>
   );
 }
 
-/* Styles */
+/* Core Interface Config Styles */
 const primaryBtn = {
-  padding: "12px 22px",
+  padding: "11px 24px",
   border: "none",
   borderRadius: "12px",
   background: "#4f46e5",
   color: "white",
   fontWeight: "600",
+  fontSize: "15px",
   cursor: "pointer",
 };
 
 const loginBtn = {
-  padding: "12px 22px",
-  border: "1px solid #d1d5db",
-  borderRadius: "12px",
-  background: "white",
-  color: "#111827",
+  padding: "11px 22px",
+  border: "none",
+  background: "transparent",
+  color: "#4b5563",
   fontWeight: "600",
+  fontSize: "15px",
   cursor: "pointer",
 };
 
 const heroPrimaryBtn = {
-  padding: "16px 28px",
+  padding: "16px 32px",
   border: "none",
   borderRadius: "16px",
   background: "#4f46e5",
@@ -526,7 +608,7 @@ const heroPrimaryBtn = {
 };
 
 const heroSecondaryBtn = {
-  padding: "16px 28px",
+  padding: "16px 32px",
   borderRadius: "16px",
   border: "1px solid #d1d5db",
   background: "white",
@@ -534,6 +616,31 @@ const heroSecondaryBtn = {
   fontWeight: "700",
   fontSize: "16px",
   cursor: "pointer",
+};
+
+/* Ambient Mesh Backdrop Orbs */
+const bgBlobLeft = {
+  position: "absolute",
+  width: "550px",
+  height: "550px",
+  borderRadius: "50%",
+  background: "radial-gradient(circle, rgba(79,70,229,0.08) 0%, rgba(255,255,255,0) 70%)",
+  top: "-100px",
+  left: "-150px",
+  zIndex: 1,
+  pointerEvents: "none"
+};
+
+const bgBlobRight = {
+  position: "absolute",
+  width: "650px",
+  height: "650px",
+  borderRadius: "50%",
+  background: "radial-gradient(circle, rgba(6,182,212,0.06) 0%, rgba(255,255,255,0) 70%)",
+  top: "350px",
+  right: "-200px",
+  zIndex: 1,
+  pointerEvents: "none"
 };
 
 export default LandingPage;
