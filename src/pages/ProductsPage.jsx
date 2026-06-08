@@ -14,7 +14,6 @@ import {
   FaLayerGroup,
   FaWarehouse,
   FaInbox,
-  FaShoppingBag,
   FaDownload,
   FaCheckCircle,
   FaExclamationTriangle,
@@ -26,18 +25,35 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.08 }
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
   }
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 16, scale: 0.98 },
+  hidden: { opacity: 0, y: 20, scale: 0.97 },
   visible: { 
     opacity: 1, 
     y: 0, 
     scale: 1,
-    transition: { type: "spring", stiffness: 110, damping: 16 } 
+    transition: { type: "spring", stiffness: 100, damping: 17 } 
   }
+};
+
+const tableRowVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 120 } },
+  exit: { opacity: 0, x: 30, scale: 0.95, transition: { duration: 0.2 } }
+};
+
+// HIGH-QUALITY IMAGE MAP ALIGNED WITH DASHBOARD CATEGORIES
+const CATEGORY_IMAGES = {
+  Electronics: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=120&q=80",
+  Furniture: "https://images.unsplash.com/photo-1581428982868-e410dd047a90?auto=format&fit=crop&w=120&q=80",
+  Accessories: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=120&q=80",
+  Clothing: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=120&q=80",
+  Books: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=120&q=80",
+  Grocery: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=120&q=80",
+  Default: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=120&q=80"
 };
 
 function ProductsPage() {
@@ -56,10 +72,10 @@ function ProductsPage() {
       catch (error) { console.error("Error parsing local storage data", error); }
     }
     return [
-      { id: 1, name: "Laptop", category: "Electronics", price: 65000, stock: 12, status: "Available" },
-      { id: 2, name: "Smart Phone", category: "Electronics", price: 25000, stock: 3, status: "Available" }, // Triggers Low Stock Warning
-      { id: 3, name: "Office Chair", category: "Furniture", price: 4500, stock: 0, status: "Out of Stock" },
-      { id: 4, name: "Printer", category: "Accessories", price: 12000, stock: 5, status: "Available" },
+      { id: 1, name: "Premium Laptop", category: "Electronics", price: 65000, stock: 12, status: "Available" },
+      { id: 2, name: "Smart Phone OLED", category: "Electronics", price: 25000, stock: 3, status: "Available" }, 
+      { id: 3, name: "Ergonomic Office Chair", category: "Furniture", price: 4500, stock: 0, status: "Out of Stock" },
+      { id: 4, name: "Wireless Mechanical Keyboard", category: "Accessories", price: 6200, stock: 5, status: "Available" },
     ];
   });
 
@@ -72,7 +88,7 @@ function ProductsPage() {
     localStorage.setItem("dashboard_products", JSON.stringify(products));
   }, [products]);
 
-  // SMART LOGISTICS AUTOMATION: SYNC STOCK INTENSITY WITH STATUS
+  // AUTOMATION: SYNC STOCK COUNTS WITH STATUS FLAGS
   useEffect(() => {
     const stockNum = Number(formData.stock);
     if (formData.stock !== "" && stockNum === 0 && formData.status !== "Out of Stock") {
@@ -80,7 +96,7 @@ function ProductsPage() {
     } else if (formData.stock !== "" && stockNum > 0 && formData.status === "Out of Stock") {
       setFormData(prev => ({ ...prev, status: "Available" }));
     }
-  }, [formData.stock]);
+  }, [formData.stock, formData.status]);
 
   // FILTER LOGIC
   const filteredProducts = products.filter((product) =>
@@ -88,7 +104,7 @@ function ProductsPage() {
     product.category.toLowerCase().includes(search.toLowerCase())
   );
 
-  // ADD / UPDATE PRODUCT HANDLER
+  // ADD / EDIT HANDLERS
   const handleAddProduct = () => {
     if (!formData.name || !formData.category || formData.price === "" || formData.stock === "") {
       alert("Please fill all fields");
@@ -121,7 +137,9 @@ function ProductsPage() {
   };
 
   const handleDelete = (id) => {
-    setProducts(products.filter((p) => p.id !== id));
+    if (window.confirm("Prune this variant asset blueprint permanently?")) {
+      setProducts(products.filter((p) => p.id !== id));
+    }
   };
 
   const handleEdit = (product) => {
@@ -135,63 +153,49 @@ function ProductsPage() {
     setTimeout(() => setShowExportSuccess(false), 3000);
   };
 
-  // METRICS
+  // METRICS CALCULATIONS
   const totalProducts = products.length;
   const totalStock = products.reduce((acc, item) => acc + Number(item.stock || 0), 0);
   const outOfStock = products.filter((item) => item.status === "Out of Stock" || Number(item.stock) === 0).length;
 
   const statsCards = [
-    { title: "Total Products", value: totalProducts, icon: <FaBoxOpen />, color: "#4f46e5", glow: "rgba(79, 70, 229, 0.25)" },
-    { title: "Total Stock Counter", value: totalStock, icon: <FaWarehouse />, color: "#10b981", glow: "rgba(16, 185, 129, 0.25)" },
-    { title: "Out Of Stock", value: outOfStock, icon: <FaLayerGroup />, color: "#ef4444", glow: "rgba(239, 68, 68, 0.25)" },
+    { title: "Total Products", value: totalProducts, icon: <FaBoxOpen />, color: "linear-gradient(135deg, #4f46e5, #6366f1)", glow: "rgba(79, 70, 229, 0.4)", borderGlow: "rgba(99, 102, 241, 0.4)" },
+    { title: "Total Stock Counter", value: totalStock, icon: <FaWarehouse />, color: "linear-gradient(135deg, #10b981, #34d399)", glow: "rgba(16, 185, 129, 0.4)", borderGlow: "rgba(52, 211, 153, 0.4)" },
+    { title: "Out Of Stock", value: outOfStock, icon: <FaLayerGroup />, color: "linear-gradient(135deg, #ef4444, #f87171)", glow: "rgba(239, 68, 68, 0.4)", borderGlow: "rgba(248, 113, 113, 0.4)" },
   ];
-
-  // DYNAMIC CATEGORY COLOR GRADIENTS
-  const getCategoryGradient = (category) => {
-    switch (category) {
-      case "Electronics": return "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)";
-      case "Furniture": return "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)";
-      case "Accessories": return "linear-gradient(135deg, #10b981 0%, #047857 100%)";
-      case "Clothing": return "linear-gradient(135deg, #ec4899 0%, #be185d 100%)";
-      case "Books": return "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)";
-      default: return "linear-gradient(135deg, #6b7280 0%, #374151 100%)";
-    }
-  };
 
   return (
     <div style={styles.container}>
       <Sidebar />
 
-      {/* COMPONENT GLOBAL STYLES FOR INTERACTIVE INTERACTIONS */}
+      {/* COMPONENT CSS ENHANCEMENTS */}
       <style>{`
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; borderRadius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
         
         .modal-input-group:focus-within {
-          border-color: #4f46e5 !important;
-          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12) !important;
-          background: #ffffff !important;
+          border-color: #6366f1 !important;
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2) !important;
+          background: rgba(255, 255, 255, 0.08) !important;
         }
         .interactive-row { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         .interactive-row:hover { 
-          background-color: #f8fafc !important; 
+          background-color: rgba(255, 255, 255, 0.04) !important; 
           transform: translateY(-2px); 
-          box-shadow: 0 10px 20px -10px rgba(15, 23, 42, 0.05);
+          box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
         }
 
-        /* HARDWARE ACCELERATED TOOLTIP ARCHITECTURE */
         .tooltip-container { position: relative; display: inline-block; }
         .tooltip-container::after {
           content: attr(data-tooltip); position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%) scale(0.9);
-          background: #0f172a; color: #ffffff; padding: 6px 10px; borderRadius: 8px; fontSize: 11px; fontWeight: '600';
-          whiteSpace: nowrap; opacity: 0; pointerEvents: none; transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); zIndex: 10;
-          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+          background: #0f172a; color: #ffffff; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 600;
+          white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); z-index: 10;
+          box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
         }
         .tooltip-container:hover::after { opacity: 1; transform: translateX(-50%) scale(1); }
 
-        /* CRITICAL LEVEL ALERT PULSE */
         @keyframes subtlePulse {
           0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
           70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
@@ -200,7 +204,7 @@ function ProductsPage() {
         .low-stock-glow { animation: subtlePulse 2s infinite; }
       `}</style>
 
-      <div style={{ flex: 1, height: "100vh", overflowY: "auto", display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, height: "100vh", overflowY: "auto", display: "flex", flexDirection: "column", minWidth: 0, zIndex: 1 }}>
         <TopNav title="Products" />
 
         <motion.div 
@@ -209,7 +213,7 @@ function ProductsPage() {
           animate="visible"
           style={{ padding: "32px" }}
         >
-          {/* TOAST SYSTEM LEDGER NOTIFICATION */}
+          {/* TOAST NOTIFICATION LEDGER */}
           <AnimatePresence>
             {showExportSuccess && (
               <motion.div 
@@ -219,40 +223,52 @@ function ProductsPage() {
                 style={styles.notificationToast}
               >
                 <FaCheckCircle style={{ color: "#10b981", fontSize: "16px" }} />
-                <span style={{ fontSize: "14px", fontWeight: "600", color: "#1e293b" }}>Inventory spreadsheet report compiled successfully.</span>
+                <span style={{ fontSize: "14px", fontWeight: "600", color: "#ffffff" }}>Inventory spreadsheet compiled successfully.</span>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* ATTRACTIVE BRANDED WELCOME INV-BANNER WITH REALTIME VECTOR ILLUSTRATIONS */}
+          {/* DYNAMIC WELCOME BANNER */}
           <motion.div variants={cardVariants} style={styles.welcomeBanner}>
             <div style={styles.welcomeOverlay} />
-            <div style={{ position: "relative", zIndex: 2, maxWidth: "65%" }}>
+            
+            {/* NO FADE: INSTANT STATIC RENDERING FOR THE BILLFLOW HERO IMAGE */}
+            <div style={styles.bannerImageContainer}>
+              <img 
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop" 
+                alt="BillFlow Premium FinTech Metrics Grid" 
+                style={styles.bannerImage}
+              />
+              <div style={styles.bannerImageLeftFadeMask} />
+            </div>
+
+            <div style={{ position: "relative", zIndex: 2, maxWidth: "60%" }}>
               <span style={styles.bannerBadge}>MANAGEMENT PORTAL ACTIVE</span>
               <h1 style={styles.bannerTitle}>Product Management Hub</h1>
               <p style={styles.bannerSubtitle}>
                 Calibrate manufacturing pipelines, evaluate warehouse capacities, map marketplace pricing tiers, and track inventory velocity.
               </p>
             </div>
-            {/* INTERACTIVE VECTOR GRAPHIC */}
-            <svg style={styles.bannerVector} viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="50" y="60" width="100" height="90" rx="12" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeDasharray="4 4" />
-              <path d="M40 75 L100 35 L160 75 L100 115 Z" fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-              <path d="M40 75 L100 115 L160 75" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-              <path d="M100 115 L100 190" stroke="rgba(255,255,255,0.25)" strokeWidth="2" />
-              <motion.circle cx="100" cy="35" r="6" fill="#38bdf8" animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} />
-              <motion.circle cx="40" cy="75" r="5" fill="#10b981" animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }} />
-              <motion.circle cx="160" cy="75" r="5" fill="#f59e0b" animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2.5, delay: 0.5, ease: "easeInOut" }} />
-            </svg>
           </motion.div>
 
-          {/* HIGHLIGHT INFRASTRUCTURE METRICS GRID */}
+          {/* HIGHLIGHT METRICS GRID */}
           <div style={styles.metricsGrid}>
             {statsCards.map((card, index) => (
               <motion.div
                 key={index}
                 variants={cardVariants}
-                whileHover={{ y: -6, boxShadow: `0 22px 30px -5px ${card.glow}` }}
+                whileHover={{ 
+                  y: -6, 
+                  backgroundColor: "rgba(255, 255, 255, 0.08)", 
+                  borderColor: card.borderGlow,
+                  boxShadow: `0 15px 35px -5px ${card.glow}` 
+                }}
+                whileTap={{ 
+                  scale: 0.98,
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderColor: card.borderGlow,
+                  boxShadow: `0 10px 25px -5px ${card.glow}`
+                }}
                 style={styles.metricCard}
               >
                 <div>
@@ -266,7 +282,7 @@ function ProductsPage() {
             ))}
           </div>
 
-          {/* CENTRAL LEDGER STOCK CORE PANEL */}
+          {/* MAIN PRODUCT MANAGEMENT PANEL */}
           <motion.div variants={cardVariants} style={styles.cardPanel}>
             <div style={styles.panelHeaderRow}>
               <div style={styles.searchContainerBlock}>
@@ -281,13 +297,13 @@ function ProductsPage() {
                   />
                 </div>
                 <span style={styles.searchFeedbackText}>
-                  Matches: <b>{filteredProducts.length}</b> variants from <b>{products.length}</b> architecture profiles
+                  Matches: <b style={{ color: "#ffffff" }}>{filteredProducts.length}</b> variants from <b style={{ color: "#ffffff" }}>{products.length}</b> records
                 </span>
               </div>
 
               <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                 <motion.button
-                  whileHover={{ y: -2, background: "#f8fafc" }}
+                  whileHover={{ y: -2, background: "rgba(255, 255, 255, 0.12)" }}
                   whileTap={{ scale: 0.97 }}
                   onClick={triggerDataExport}
                   style={styles.secondaryExportBtn}
@@ -296,7 +312,7 @@ function ProductsPage() {
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ y: -2, scale: 1.02, boxShadow: "0 12px 20px -3px rgba(79,70,229,0.35)" }}
+                  whileHover={{ y: -2, scale: 1.02, boxShadow: "0 12px 25px rgba(79,70,229,0.5)" }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setEditId(null);
@@ -310,7 +326,7 @@ function ProductsPage() {
               </div>
             </div>
 
-            {/* PRODUCT DATA ARCHITECTURE LAYER */}
+            {/* PRODUCT DATATABLE CONTAINER */}
             <div style={{ overflowX: "auto", margin: "0 -24px -24px -24px", padding: "0 24px 24px 24px" }}>
               {filteredProducts.length === 0 ? (
                 <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} style={styles.emptyStateContainer}>
@@ -321,13 +337,13 @@ function ProductsPage() {
               ) : (
                 <table style={styles.ledgerTable}>
                   <thead>
-                    <tr style={{ background: "#f8fafc" }}>
-                      <th style={styles.tableHead}>PRODUCT IDENTIFIER NODE</th>
-                      <th style={styles.tableHead}>CATEGORY TRACK</th>
-                      <th style={styles.tableHead}>UNIT EXCHANGE VALUATION</th>
-                      <th style={styles.tableHead}>WAREHOUSE QUANTITY COUNTER</th>
-                      <th style={styles.tableHead}>CHANNEL PIPELINE STATE</th>
-                      <th style={{ ...styles.tableHead, textAlign: "center" }}>OPERATIONAL ACTIONS</th>
+                    <tr style={{ background: "rgba(255, 255, 255, 0.04)" }}>
+                      <th style={styles.tableHead}>PRODUCT INFO</th>
+                      <th style={styles.tableHead}>CATEGORY</th>
+                      <th style={styles.tableHead}>UNIT PRICE</th>
+                      <th style={styles.tableHead}>QUANTITY</th>
+                      <th style={styles.tableHead}>PIPELINE STATE</th>
+                      <th style={{ ...styles.tableHead, textAlign: "center" }}>OPERATIONS</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -335,27 +351,30 @@ function ProductsPage() {
                       {filteredProducts.map((product, index) => {
                         const isOutOfStock = Number(product.stock) === 0 || product.status === "Out of Stock";
                         const isLowStock = !isOutOfStock && Number(product.stock) <= 5;
+                        const productThumbnail = CATEGORY_IMAGES[product.category] || CATEGORY_IMAGES.Default;
 
                         return (
                           <motion.tr
                             key={product.id || index}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -15, transition: { duration: 0.18 } }}
+                            variants={tableRowVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
                             layout
                             className="interactive-row"
                             style={styles.tableRowStyle}
                           >
-                            {/* PRODUCT METRIC IDENTIFIER GRAPHIC ELEMENT */}
                             <td style={styles.tableData}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                                <motion.div 
-                                  whileHover={{ scale: 1.08, rotate: 5 }} 
-                                  style={{ ...styles.avatarCircle, background: getCategoryGradient(product.category) }}
-                                >
-                                  <FaShoppingBag style={{ fontSize: "14px", color: "#ffffff" }} />
-                                </motion.div>
-                                <span style={{ fontWeight: "700", color: "#0f172a", fontSize: "14.5px" }}>{product.name}</span>
+                              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                                <div style={styles.imageWrapper}>
+                                  <img 
+                                    src={productThumbnail} 
+                                    alt={product.name} 
+                                    style={styles.productImageThumb} 
+                                  />
+                                  <div style={styles.imageGlassOverlay} />
+                                </div>
+                                <span style={{ fontWeight: "700", color: "#ffffff", fontSize: "14.5px" }}>{product.name}</span>
                               </div>
                             </td>
 
@@ -364,20 +383,19 @@ function ProductsPage() {
                             </td>
 
                             <td style={styles.tableData}>
-                              <div style={{ display: "flex", alignItems: "center", gap: "2px", fontWeight: "700", color: "#1e293b" }}>
-                                <FaRupeeSign style={{ fontSize: "12px", color: "#64748b" }} />
+                              <div style={{ display: "flex", alignItems: "center", gap: "2px", fontWeight: "700", color: "#6366f1" }}>
+                                <FaRupeeSign style={{ fontSize: "12px", color: "#a5b4fc" }} />
                                 <span>{product.price.toLocaleString("en-IN")}</span>
                               </div>
                             </td>
 
-                            {/* WAREHOUSE QUANTITY WITH LOW STOCK CRITICAL NOTIFICATIONS */}
                             <td style={styles.tableData}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                                 <span style={{ 
                                   fontWeight: "700", 
                                   fontFamily: "monospace", 
                                   fontSize: "15px",
-                                  color: isOutOfStock ? "#ef4444" : isLowStock ? "#d97706" : "#334155" 
+                                  color: isOutOfStock ? "#f87171" : isLowStock ? "#fbbf24" : "#e2e8f0" 
                                 }}>
                                   {product.stock} units
                                 </span>
@@ -397,10 +415,11 @@ function ProductsPage() {
                             <td style={styles.tableData}>
                               <span style={{
                                 ...styles.statusBadge,
-                                background: isOutOfStock ? "#fee2e2" : "#e2fbe8",
-                                color: isOutOfStock ? "#991b1b" : "#15803d",
+                                background: isOutOfStock ? "rgba(239, 68, 68, 0.15)" : "rgba(16, 185, 129, 0.15)",
+                                color: isOutOfStock ? "#f87171" : "#34d399",
+                                border: isOutOfStock ? "1px solid rgba(239, 68, 68, 0.25)" : "1px solid rgba(16, 185, 129, 0.25)"
                               }}>
-                                <span style={{ ...styles.statusDot, background: isOutOfStock ? "#ef4444" : "#16a34a" }} />
+                                <span style={{ ...styles.statusDot, background: isOutOfStock ? "#ef4444" : "#10b981" }} />
                                 {isOutOfStock ? "Out of Stock" : "Available"}
                               </span>
                             </td>
@@ -411,7 +430,7 @@ function ProductsPage() {
                                   <motion.button
                                     whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                                     onClick={() => handleEdit(product)}
-                                    style={{ ...styles.rowActionBtn, background: "#fef3c7", color: "#d97706" }}
+                                    style={{ ...styles.rowActionBtn, background: "rgba(245, 158, 11, 0.15)", color: "#fbbf24" }}
                                   >
                                     <FaEdit />
                                   </motion.button>
@@ -420,7 +439,7 @@ function ProductsPage() {
                                   <motion.button
                                     whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                                     onClick={() => handleDelete(product.id)}
-                                    style={{ ...styles.rowActionBtn, background: "#fee2e2", color: "#dc2626" }}
+                                    style={{ ...styles.rowActionBtn, background: "rgba(239, 68, 68, 0.15)", color: "#f87171" }}
                                   >
                                     <FaTrash />
                                   </motion.button>
@@ -439,7 +458,7 @@ function ProductsPage() {
         </motion.div>
       </div>
 
-      {/* DYNAMIC FORM INJECTION MODAL LAYER WITH BLUR OVERLAY */}
+      {/* ACTION CONTROLS MODAL DIALOG CONTAINER */}
       <AnimatePresence>
         {showModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={styles.modalBackdrop}>
@@ -452,26 +471,26 @@ function ProductsPage() {
 
               <div style={styles.modalHeaderBlock}>
                 <div style={styles.modalIconBox}>
-                  <FaBoxes style={{ fontSize: "20px", color: "#4f46e5" }} />
+                  <FaBoxes style={{ fontSize: "20px", color: "#6366f1" }} />
                 </div>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "#0f172a" }}>
-                    {editId ? "Modify Product Configuration" : "Deploy New Product Entity"}
+                  <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "#ffffff" }}>
+                    {editId ? "Modify Product Variant" : "Deploy New Product Entity"}
                   </h2>
-                  <p style={{ margin: "2px 0 0 0", fontSize: "13px", color: "#64748b" }}>Register item parameters to central systemic registry.</p>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "13px", color: "#94a3b8" }}>Register item parameters to central system.</p>
                 </div>
               </div>
 
-              <label style={styles.modalInputLabel}>Product Label Designation</label>
+              <label style={styles.modalInputLabel}>Product Designation</label>
               <div className="modal-input-group" style={styles.modalInputWrapper}>
                 <FaBoxOpen style={styles.modalInputIcon} />
                 <input
-                  type="text" placeholder="e.g., UltraWide Monitor v2" value={formData.name}
+                  type="text" placeholder="e.g., Wireless Mechanical Keyboard" value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={styles.cleanInput}
                 />
               </div>
 
-              <label style={styles.modalInputLabel}>Inventory Operational Category</label>
+              <label style={styles.modalInputLabel}>Matrix Category</label>
               <div className="modal-input-group" style={styles.modalInputWrapper}>
                 <FaLayerGroup style={styles.modalInputIcon} />
                 <select
@@ -479,9 +498,9 @@ function ProductsPage() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   style={styles.cleanSelect}
                 >
-                  <option value="">Select core matrix category</option>
+                  <option value="" style={{ background: "#1e293b" }}>Select product category</option>
                   {categories.map((cat, idx) => (
-                    <option key={idx} value={cat}>{cat}</option>
+                    <option key={idx} value={cat} style={{ background: "#1e293b" }}>{cat}</option>
                   ))}
                 </select>
               </div>
@@ -498,7 +517,7 @@ function ProductsPage() {
                   </div>
                 </div>
                 <div>
-                  <label style={styles.modalInputLabel}>Initial Stock Counter</label>
+                  <label style={styles.modalInputLabel}>Stock Counter</label>
                   <div className="modal-input-group" style={styles.modalInputWrapper}>
                     <FaWarehouse style={styles.modalInputIcon} />
                     <input
@@ -510,7 +529,7 @@ function ProductsPage() {
               </div>
 
               <label style={styles.modalInputLabel}>Pipeline Logistics State Flag</label>
-              <div className="modal-input-group" style={{ ...styles.modalInputWrapper, background: Number(formData.stock) === 0 ? "#fff1f2" : "#f8fafc" }}>
+              <div className="modal-input-group" style={{ ...styles.modalInputWrapper, background: Number(formData.stock) === 0 ? "rgba(239, 68, 68, 0.1)" : "rgba(255,255,255,0.05)" }}>
                 <FaCheckCircle style={{ ...styles.modalInputIcon, color: Number(formData.stock) === 0 ? "#f43f5e" : "#94a3b8" }} />
                 <select
                   value={Number(formData.stock) === 0 ? "Out of Stock" : formData.status}
@@ -518,13 +537,13 @@ function ProductsPage() {
                   onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                   style={styles.cleanSelect}
                 >
-                  <option value="Available">State Flag: Available for Marketplace</option>
-                  <option value="Out of Stock">State Flag: Suppressed Stock Lockout</option>
+                  <option value="Available" style={{ background: "#1e293b" }}>State Flag: Available for Marketplace</option>
+                  <option value="Out of Stock" style={{ background: "#1e293b" }}>State Flag: Suppressed Stock Lockout</option>
                 </select>
               </div>
 
               <motion.button 
-                whileHover={{ y: -2, boxShadow: "0 10px 20px rgba(79, 70, 229, 0.25)" }} whileTap={{ scale: 0.99 }} 
+                whileHover={{ y: -2, boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)" }} whileTap={{ scale: 0.99 }} 
                 onClick={handleAddProduct} 
                 style={{
                   ...styles.modalExecuteBtn,
@@ -533,7 +552,7 @@ function ProductsPage() {
                     : "linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)"
                 }}
               >
-                {editId ? "Commit Changes" : "Deploy Variant To Floor"}
+                {editId ? "Commit Changes" : "Deploy Variant"}
               </motion.button>
             </motion.div>
           </motion.div>
@@ -545,89 +564,111 @@ function ProductsPage() {
 
 const styles = {
   container: {
-    display: "flex", height: "100vh", background: "#f8fafc", overflowX: "hidden", overflowY: "hidden",
+    display: "flex", height: "100vh", 
+    backgroundColor: "#0b0f19",
+    overflowX: "hidden", overflowY: "hidden",
     fontFamily: "system-ui, -apple-system, sans-serif",
   },
   notificationToast: {
-    position: "fixed", top: "32px", right: "32px", background: "#ffffff", padding: "16px 24px",
-    borderRadius: "16px", boxShadow: "0 20px 25px -5px rgba(15,23,42,0.08), 0 10px 10px -5px rgba(15,23,42,0.04)",
-    display: "flex", alignItems: "center", gap: "12px", zIndex: 999999, border: "1px solid #e2e8f0"
+    position: "fixed", top: "32px", right: "32px", background: "#1e293b", padding: "16px 24px",
+    borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+    display: "flex", alignItems: "center", gap: "12px", zIndex: 999999, border: "1px solid rgba(255,255,255,0.1)"
   },
   welcomeBanner: {
-    background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)", borderRadius: "24px",
-    padding: "44px 40px", color: "white", marginBottom: "32px", position: "relative",
+    background: "linear-gradient(135deg, #14112e 0%, #0c0c1a 100%)", 
+    borderRadius: "20px", padding: "40px 44px", color: "white", marginBottom: "32px", position: "relative",
     overflow: "hidden", display: "flex", justifyContent: "space-between", alignItems: "center",
-    boxShadow: "0 10px 30px -10px rgba(15,23,42,0.15)"
+    border: "1px solid rgba(255, 255, 255, 0.04)",
+    boxShadow: "0 20px 40px -15px rgba(0,0,0,0.5)"
   },
   welcomeOverlay: {
     position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-    background: "radial-gradient(circle at bottom right, rgba(99,102,241,0.12) 0%, transparent 65%)", zIndex: 1
+    background: "radial-gradient(circle at top left, rgba(99,102,241,0.12) 0%, transparent 60%)", zIndex: 2
   },
-  bannerBadge: { background: "rgba(99, 102, 241, 0.2)", color: "#a5b4fc", fontSize: "11px", fontWeight: "700", padding: "6px 12px", borderRadius: "8px", letterSpacing: "1px", display: "inline-block", marginBottom: "12px" },
-  bannerTitle: { fontSize: "clamp(26px, 4vw, 34px)", fontWeight: "800", margin: "0 0 10px 0", letterSpacing: "-0.5px" },
-  bannerSubtitle: { opacity: 0.75, margin: 0, fontSize: "15px", lineHeight: "1.6" },
-  bannerVector: { width: "130px", height: "130px", position: "relative", zIndex: 2, opacity: 0.95 },
+  bannerImageContainer: {
+    position: "absolute", right: 0, top: 0, bottom: 0, width: "45%", height: "100%",
+    zIndex: 1, opacity: 0.5, pointerEvents: "none", overflow: "hidden"
+  },
+  bannerImage: {
+    width: "100%", height: "100%", objectFit: "cover", objectPosition: "center-right"
+  },
+  bannerImageLeftFadeMask: {
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    background: "linear-gradient(to right, #0c0c1a 0%, rgba(12, 12, 26, 0.8) 20%, rgba(12, 12, 26, 0) 100%)"
+  },
+  bannerBadge: { background: "rgba(99, 102, 241, 0.15)", color: "#93c5fd", fontSize: "11px", fontWeight: "700", padding: "5px 12px", borderRadius: "6px", letterSpacing: "0.5px", display: "inline-block", marginBottom: "14px" },
+  bannerTitle: { fontSize: "30px", fontWeight: "700", margin: "0 0 12px 0", letterSpacing: "-0.3px" },
+  bannerSubtitle: { opacity: 0.7, margin: 0, fontSize: "14.5px", lineHeight: "1.6" },
   metricsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px", marginBottom: "32px" },
   metricCard: {
-    background: "#ffffff", borderRadius: "24px", padding: "24px", boxShadow: "0 4px 20px rgba(148, 163, 184, 0.03)",
-    border: "1px solid rgba(226, 232, 240, 0.8)", display: "flex", justifyContent: "space-between", alignItems: "center",
-    cursor: "pointer", boxSizing: "border-box", height: "115px"
+    background: "rgba(255, 255, 255, 0.03)", borderRadius: "20px", padding: "24px", 
+    border: "1px solid rgba(255, 255, 255, 0.05)", display: "flex", justifyContent: "space-between", alignItems: "center",
+    cursor: "pointer", boxSizing: "border-box", height: "115px",
+    boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.15)", transition: "all 0.3s, border-color 0.3s, box-shadow 0.3s"
   },
-  metricTitle: { color: "#64748b", fontWeight: "700", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 6px 0" },
-  metricValue: { fontSize: "32px", fontWeight: "800", color: "#0f172a", margin: 0, letterSpacing: "-1px" },
+  metricTitle: { color: "#64748b", fontWeight: "700", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 6px 0" },
+  metricValue: { fontSize: "30px", fontWeight: "700", color: "#ffffff", margin: 0 },
   metricIconContainer: {
-    width: "54px", height: "54px", borderRadius: "18px", color: "white", display: "flex",
-    justifyContent: "center", alignItems: "center", fontSize: "20px", boxShadow: "0 8px 20px -4px rgba(0,0,0,0.05)"
+    width: "50px", height: "50px", borderRadius: "14px", color: "white", display: "flex",
+    justifyContent: "center", alignItems: "center", fontSize: "18px"
   },
-  cardPanel: { background: "#ffffff", borderRadius: "24px", padding: "28px", boxShadow: "0 4px 20px rgba(148, 163, 184, 0.03)", border: "1px solid rgba(226, 232, 240, 0.8)", boxSizing: "border-box" },
-  panelHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px", gap: "20px", flexWrap: "wrap" },
+  cardPanel: { 
+    background: "rgba(255, 255, 255, 0.02)", borderRadius: "20px", padding: "24px", 
+    border: "1px solid rgba(255, 255, 255, 0.05)", boxSizing: "border-box",
+    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.3)"
+  },
+  panelHeaderRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", gap: "20px", flexWrap: "wrap" },
   searchContainerBlock: { display: "flex", flexDirection: "column", gap: "8px", width: "100%", maxWidth: "400px" },
   searchBarWrapper: { position: "relative", width: "100%" },
-  searchIcon: { position: "absolute", top: "50%", left: "18px", transform: "translateY(-50%)", color: "#94a3b8", fontSize: "15px" },
+  searchIcon: { position: "absolute", top: "50%", left: "18px", transform: "translateY(-50%)", color: "#64748b", fontSize: "14px" },
   searchInput: {
-    width: "100%", padding: "14px 14px 14px 48px", borderRadius: "16px", border: "1px solid #e2e8f0",
-    background: "#f8fafc", outline: "none", fontSize: "14px", color: "#334155", boxSizing: "border-box", transition: "all 0.2s ease-in-out",
+    width: "100%", padding: "12px 14px 12px 44px", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.06)",
+    background: "rgba(255, 255, 255, 0.03)", outline: "none", fontSize: "14px", color: "#ffffff", boxSizing: "border-box"
   },
   searchFeedbackText: { fontSize: "12px", color: "#64748b", paddingLeft: "4px" },
   secondaryExportBtn: {
-    padding: "14px 22px", border: "1px solid #e2e8f0", borderRadius: "16px", background: "#ffffff",
-    color: "#475569", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: "700", fontSize: "14px"
+    display: "flex", alignItems: "center", gap: "8px", background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(255,255,255,0.06)",
+    padding: "11px 18px", borderRadius: "12px", color: "#ffffff", fontSize: "13.5px", fontWeight: "600", cursor: "pointer"
   },
   primaryPanelActionBtn: {
-    padding: "14px 24px", border: "none", borderRadius: "16px", background: "linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)",
-    color: "white", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontWeight: "700", fontSize: "14px"
+    display: "flex", alignItems: "center", gap: "8px", background: "linear-gradient(135deg, #4f46e5, #6366f1)", border: "none",
+    padding: "11px 18px", borderRadius: "12px", color: "#ffffff", fontSize: "13.5px", fontWeight: "600", cursor: "pointer"
   },
-  ledgerTable: { width: "100%", minWidth: "950px", borderCollapse: "collapse" },
-  tableHead: { textAlign: "left", padding: "16px 24px", borderBottom: "2px solid #f1f5f9", color: "#64748b", fontWeight: "700", fontSize: "12px", letterSpacing: "0.5px" },
-  tableData: { padding: "18px 24px", borderBottom: "1px solid #f1f5f9", color: "#475569", fontSize: "14px", verticalAlign: "middle" },
-  tableRowStyle: { background: "#ffffff" },
-  avatarCircle: {
-    width: "42px", height: "42px", borderRadius: "14px", color: "white", display: "flex",
-    justifyContent: "center", alignItems: "center", boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
+  emptyStateContainer: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px" },
+  emptyStateIcon: { fontSize: "40px", color: "#334155", marginBottom: "16px" },
+  emptyStateHeading: { color: "#ffffff", fontSize: "17px", margin: "0 0 6px 0" },
+  emptyStateText: { color: "#64748b", fontSize: "13.5px", margin: 0 },
+  ledgerTable: { width: "100%", borderCollapse: "separate", borderSpacing: "0 8px" },
+  tableHead: { textTransform: "uppercase", color: "#64748b", fontSize: "11px", fontWeight: "700", letterSpacing: "0.5px", padding: "14px 20px", textAlign: "left" },
+  tableRowStyle: { background: "rgba(255,255,255,0.01)", borderRadius: "14px" },
+  tableData: { padding: "14px 20px", verticalAlign: "middle", color: "#cbd5e1" },
+  imageWrapper: { 
+    position: "relative", width: "42px", height: "42px", borderRadius: "10px", 
+    overflow: "hidden", background: "#1e293b", border: "1px solid rgba(255, 255, 255, 0.08)", flexShrink: 0
   },
-  categoryBadge: { background: "#f1f5f9", color: "#475569", padding: "6px 12px", borderRadius: "10px", fontSize: "13px", fontWeight: "600" },
-  lowStockWarningBadge: { background: "#fff7ed", color: "#c2410c", fontSize: "11px", fontWeight: "700", padding: "4px 8px", borderRadius: "8px", display: "inline-flex", alignItems: "center", gap: "4px", border: "1px solid #ffedd5", cursor: "default" },
-  statusBadge: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 12px", borderRadius: "12px", fontSize: "13px", fontWeight: "700" },
+  productImageThumb: { 
+    width: "100%", height: "100%", objectFit: "cover" 
+  },
+  imageGlassOverlay: { 
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0, 
+    background: "linear-gradient(rgba(255,255,255,0.05), transparent)", pointerEvents: "none"
+  },
+  categoryBadge: { background: "rgba(255,255,255,0.05)", padding: "4px 10px", borderRadius: "8px", fontSize: "12px", fontWeight: "600", border: "1px solid rgba(255,255,255,0.03)" },
+  lowStockWarningBadge: { background: "rgba(245,158,11,0.15)", color: "#f59e0b", fontSize: "11px", padding: "3px 8px", borderRadius: "6px", fontWeight: "700", display: "inline-flex", alignItems: "center", gap: "4px", border: "1px solid rgba(245,158,11,0.2)" },
+  statusBadge: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 12px", borderRadius: "20px", fontSize: "12px", fontWeight: "700" },
   statusDot: { width: "6px", height: "6px", borderRadius: "50%" },
-  rowActionBtn: { width: "36px", height: "36px", border: "none", borderRadius: "10px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer", fontSize: "14px" },
-  emptyStateContainer: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 24px", textAlign: "center" },
-  emptyStateIcon: { fontSize: "48px", color: "#cbd5e1", marginBottom: "16px" },
-  emptyStateHeading: { fontSize: "16px", fontWeight: "700", color: "#475569", margin: "0 0 4px 0" },
-  emptyStateText: { fontSize: "14px", color: "#94a3b8", margin: 0 },
-  modalBackdrop: {
-    position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.3)", backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)", display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", zIndex: 99999
-  },
-  modalCard: { background: "#ffffff", width: "100%", maxWidth: "480px", borderRadius: "28px", padding: "36px", position: "relative", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.12)", boxSizing: "border-box" },
-  modalCloseBtn: { position: "absolute", top: "28px", right: "28px", border: "none", background: "transparent", fontSize: "24px", color: "#94a3b8", cursor: "pointer", outline: "none" },
-  modalHeaderBlock: { display: "flex", alignItems: "center", gap: "16px", marginBottom: "28px" },
-  modalIconBox: { width: "44px", height: "44px", borderRadius: "12px", background: "#f0fdf4", display: "flex", justifyContent: "center", alignItems: "center" },
-  modalInputLabel: { display: "block", fontSize: "11px", fontWeight: "700", color: "#64748b", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" },
-  modalInputWrapper: { display: "flex", alignItems: "center", gap: "12px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "14px", padding: "12px 16px", marginBottom: "18px", transition: "all 0.2s ease" },
-  modalInputIcon: { color: "#94a3b8", fontSize: "14px" },
-  cleanInput: { border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "14px", color: "#334155" },
-  cleanSelect: { border: "none", background: "transparent", outline: "none", width: "100%", fontSize: "14px", color: "#334155", cursor: "pointer" },
-  modalExecuteBtn: { width: "100%", padding: "15px", border: "none", borderRadius: "14px", color: "white", fontWeight: "700", fontSize: "15px", cursor: "pointer", marginTop: "12px" },
+  rowActionBtn: { width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "13px" },
+  modalBackdrop: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(4, 6, 14, 0.8)", backdropFilter: "blur(8px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 99999 },
+  modalCard: { background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", padding: "32px", width: "100%", maxWidth: "460px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)", position: "relative", boxSizing: "border-box" },
+  modalCloseBtn: { position: "absolute", top: "24px", right: "24px", background: "none", border: "none", color: "#64748b", fontSize: "24px", cursor: "pointer", outline: "none" },
+  modalHeaderBlock: { display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" },
+  modalIconBox: { width: "44px", height: "44px", borderRadius: "12px", background: "rgba(99,102,241,0.1)", display: "flex", justifyContent: "center", alignItems: "center" },
+  modalInputLabel: { display: "block", color: "#94a3b8", fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px", paddingLeft: "2px" },
+  modalInputWrapper: { display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", padding: "0 16px", borderRadius: "14px", marginBottom: "18px", height: "44px", boxSizing: "border-box", transition: "all 0.2s" },
+  modalInputIcon: { color: "#64748b", fontSize: "14px" },
+  cleanInput: { background: "none", border: "none", outline: "none", color: "#ffffff", fontSize: "14px", width: "100%", height: "100%" },
+  cleanSelect: { background: "none", border: "none", outline: "none", color: "#ffffff", fontSize: "14px", width: "100%", height: "100%", cursor: "pointer" },
+  modalExecuteBtn: { width: "100%", height: "44px", border: "none", borderRadius: "14px", color: "#ffffff", fontSize: "14px", fontWeight: "700", cursor: "pointer", marginTop: "8px" }
 };
 
 export default ProductsPage;

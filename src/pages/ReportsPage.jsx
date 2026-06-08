@@ -1,6 +1,7 @@
 // src/pages/ReportsPage.jsx
 import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   BarChart, 
   Bar, 
@@ -23,16 +24,49 @@ import {
   FaArrowUp,
   FaArrowDown,
   FaCheckCircle,
-  FaClock
+  FaClock,
+  FaFileAlt
 } from "react-icons/fa";
+
+// FRAMER MOTION ANIMATION VARIANTS
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05, delayChildren: 0.1 }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.98 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 18 } 
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -15 },
+  visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 120 } }
+};
+
+// HIGH-QUALITY AUDIT TRACK IMAGES FOR PREMIUM UI LOOK
+const REPORT_THEME_IMAGES = {
+  "Live Revenue Audit": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=120&q=80",
+  "Pending Gateway Payouts": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=120&q=80",
+  "System Tax Invoice Summary": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=120&q=80",
+  "Default": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=120&q=80"
+};
 
 function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("Monthly");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  
-  // LIVE DATA STATES
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  
   const [dashboardMetrics, setDashboardMetrics] = useState({
     totalRevenue: 0,
     invoiceCount: 0,
@@ -46,18 +80,17 @@ function ReportsPage() {
   const [salesChartData, setSalesChartData] = useState([]);
   const [recentLiveReports, setRecentLiveReports] = useState([]);
 
-  // RESPONSIVE VIEWPORT LISTENER
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // FETCH LIVE DATA
   useEffect(() => {
     const fetchReportData = async () => {
       try {
         setLoading(true);
+        // Simulate premium metrics sync
         setDashboardMetrics({
           totalRevenue: 245000, 
           invoiceCount: 1248,   
@@ -124,7 +157,7 @@ function ReportsPage() {
       growth: dashboardMetrics.revenueGrowth,
       icon: <FaChartLine />,
       color: "#6366f1",
-      bg: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)",
+      glow: "rgba(99, 102, 241, 0.25)",
       status: "up",
     },
     {
@@ -133,7 +166,7 @@ function ReportsPage() {
       growth: dashboardMetrics.invoiceGrowth,
       icon: <FaFileInvoiceDollar />,
       color: "#10b981",
-      bg: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
+      glow: "rgba(16, 185, 129, 0.25)",
       status: "up",
     },
     {
@@ -142,7 +175,7 @@ function ReportsPage() {
       growth: dashboardMetrics.customerGrowth,
       icon: <FaUsers />,
       color: "#f59e0b",
-      bg: "linear-gradient(135deg, #fffbb1 0%, #fef3c7 100%)",
+      glow: "rgba(245, 158, 11, 0.25)",
       status: "up",
     },
     {
@@ -151,7 +184,7 @@ function ReportsPage() {
       growth: dashboardMetrics.expenseGrowth,
       icon: <FaChartBar />,
       color: "#ef4444",
-      bg: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+      glow: "rgba(239, 68, 68, 0.25)",
       status: "down",
     },
   ];
@@ -161,12 +194,14 @@ function ReportsPage() {
     doc.setFontSize(22);
     doc.text("Billing & Payment Analytics Report", 20, 20);
     doc.save(`${selectedPeriod}-Live-Financial-Report.pdf`);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div style={{ backgroundColor: "#0f172a", color: "#fff", padding: "10px 14px", borderRadius: "12px", fontSize: "13px", fontWeight: "600", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }}>
+        <div style={styles.chartTooltip}>
           <p style={{ margin: 0 }}>{`Value: ₹${payload[0].value}k`}</p>
         </div>
       );
@@ -176,139 +211,291 @@ function ReportsPage() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "#f8fafc" }}>
-        <div style={{ border: "3px solid #e2e8f0", borderTop: "3px solid #6366f1", borderRadius: "50%", width: "35px", height: "35px", animation: "spin 0.8s linear infinite" }}></div>
+      <div style={styles.loaderCanvas}>
+        <div style={styles.spinnerElement}></div>
         <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#f8fafc", overflow: "hidden", fontFamily: "system-ui, sans-serif" }}>
-      
-      {/* LOCKED SIDEBAR HOUSING WRAPPER */}
+    <div style={styles.container}>
+      <style>{`
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+        .control-select:focus-within {
+          border-color: #6366f1 !important;
+          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+        }
+      `}</style>
+
+      {/* AMBIENT BACKGROUND GLOW NODES */}
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.15, 1], 
+          x: [0, 30, 0], 
+          y: [0, -20, 0] 
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        style={styles.ambientBlobLeft} 
+      />
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.2, 1], 
+          x: [0, -40, 0], 
+          y: [0, 40, 0] 
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        style={styles.ambientBlobRight} 
+      />
+
+      {/* SIDEBAR NAVIGATION BLOCK */}
       <div style={{ height: "100vh", position: "sticky", top: 0, zIndex: 100, flexShrink: 0 }}>
         <Sidebar />
       </div>
 
-      {/* INDEPENDENT SCROLLABLE MAIN CONTENT AREA */}
-      <div style={{ flex: 1, height: "100vh", overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* MAIN VIEW AREA */}
+      <div style={{ flex: 1, height: "100vh", overflowY: "auto", overflowX: "hidden", display: "flex", flexDirection: "column", zIndex: 10 }}>
         
-        {/* TOP NAV GLASSMORPHISM TRACK */}
-        <div style={{ position: "sticky", top: 0, zIndex: 90, background: "rgba(248, 250, 252, 0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(226, 232, 240, 0.8)" }}>
-          <TopNav title="Reports" />
+        <div style={styles.stickyTopNav}>
+          <TopNav title="Reports & Analytics" />
         </div>
 
-        {/* CONTAINER CONTENT SLOPING BOX */}
-        <div style={{ padding: isMobile ? "20px" : "40px", width: "100%", boxSizing: "border-box" }}>
-          
-          {/* BANNER WITH SLEEK ACCENT RADIUS */}
-          <div style={{ 
-            background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)", 
-            borderRadius: "24px", 
-            padding: isMobile ? "24px" : "40px", 
-            color: "white", 
-            marginBottom: "32px",
-            boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.25)"
-          }}>
-            <h1 style={{ fontSize: isMobile ? "26px" : "38px", fontWeight: "800", marginBottom: "12px", letterSpacing: "-0.02em" }}>Live System Statements</h1>
-            <p style={{ opacity: 0.85, lineHeight: "1.6", fontSize: isMobile ? "14px" : "16px", margin: 0, fontWeight: "400" }}>
-              Real-time audit overview sync with your accounting books, invoices, payments entries, and expense tracking tables.
-            </p>
-          </div>
+        {/* CONTENT PACK WRAPPER */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ padding: isMobile ? "24px" : "36px", boxSizing: "border-box" }}
+        >
+          {/* TOAST SYSTEM ACCELERATOR */}
+          <AnimatePresence>
+            {showToast && (
+              <motion.div 
+                initial={{ opacity: 0, y: -30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                style={styles.toastNotification}
+              >
+                <FaCheckCircle style={{ color: "#10b981", fontSize: "16px" }} />
+                <span style={{ fontSize: "14px", fontWeight: "600", color: "#ffffff" }}>Financial report spreadsheet saved successfully.</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {error && <div style={{ padding: "16px", background: "#fee2e2", color: "#ef4444", borderRadius: "16px", marginBottom: "32px", fontWeight: "600" }}>{error}</div>}
+          {/* DYNAMIC WELCOME BANNER MATCHING CORE DASHBOARD */}
+          <motion.div variants={cardVariants} style={styles.welcomeBanner}>
+            <div style={styles.bannerOverlay} />
+            <div style={{ position: "relative", zIndex: 2, maxWidth: isMobile ? "100%" : "70%" }}>
+              <span style={styles.bannerBadge}>FINANCIAL LEDGER ACTIVE</span>
+              <h1 style={{ fontSize: isMobile ? "26px" : "34px", fontWeight: "800", margin: "0 0 10px 0", letterSpacing: "-0.02em" }}>
+                Live System Statements
+              </h1>
+              <p style={styles.bannerSubtitle}>
+                Real-time audit overview sync with your accounting books, invoices, payment entries, and expense tracking tables.
+              </p>
+            </div>
 
-          {/* CONTROLS */}
-          <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "stretch" : "center", gap: "16px", marginBottom: "32px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "white", padding: "12px 20px", borderRadius: "16px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.03)", border: "1px solid #e2e8f0" }}>
-              <FaCalendarAlt style={{ color: "#6366f1" }} />
+            {!isMobile && (
+              <svg style={styles.bannerVectorGraphic} viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M30 160 L70 110 L120 130 L170 60" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M30 160 L70 110 L120 130 L170 60 L170 160 Z" fill="linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%)" />
+                <circle cx="170" cy="60" r="6" fill="#10b981" />
+                <circle cx="70" cy="110" r="4" fill="#6366f1" />
+                <line x1="20" y1="160" x2="180" y2="160" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+              </svg>
+            )}
+          </motion.div>
+
+          {error && <div style={styles.errorPanel}>{error}</div>}
+
+          {/* UTILITY CONTROL ROW */}
+          <div style={{ ...styles.controlRow, flexDirection: isMobile ? "column" : "row" }}>
+            <div className="control-select" style={styles.filterWrapper}>
+              <FaCalendarAlt style={{ color: "#6366f1", fontSize: "14px" }} />
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                style={{ border: "none", outline: "none", background: "transparent", fontSize: "15px", fontWeight: "600", cursor: "pointer", color: "#0f172a" }}
+                style={styles.dropdownElement}
               >
-                <option>Daily</option>
-                <option>Weekly</option>
-                <option>Monthly</option>
-                <option>Yearly</option>
+                <option style={{ background: "#111827" }}>Daily</option>
+                <option style={{ background: "#111827" }}>Weekly</option>
+                <option style={{ background: "#111827" }}>Monthly</option>
+                <option style={{ background: "#111827" }}>Yearly</option>
               </select>
             </div>
 
-            <button onClick={handleDownload} style={{ border: "none", padding: "14px 24px", borderRadius: "16px", background: "#4f46e5", color: "white", display: "flex", justifyContent: "center", alignItems: "center", gap: "10px", cursor: "pointer", fontWeight: "600", boxShadow: "0 4px 14px rgba(79, 70, 229, 0.35)", transition: "opacity 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'} onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}>
+            <motion.button 
+              whileHover={{ y: -2, scale: 1.02, boxShadow: "0 10px 20px rgba(79,70,229,0.4)" }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleDownload} 
+              style={styles.downloadReportBtn}
+            >
               <FaDownload /> Download Report
-            </button>
+            </motion.button>
           </div>
 
-          {/* CARDS METRIC GRID */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px", marginBottom: "32px" }}>
+          {/* GRID METRICS SECTION */}
+          <div style={{ ...styles.metricsGrid, gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(240px, 1fr))" }}>
             {reportsCardsConfig.map((report, index) => (
-              <div key={index} style={{ background: "white", borderRadius: "24px", padding: "28px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)", border: "1px solid #e2e8f0", transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }} onMouseEnter={(e) => {e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0,0,0,0.05)';}} onMouseLeave={(e) => {e.currentTarget.style.transform = 'translateY(0px)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)';}}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-                  <div style={{ width: "52px", height: "52px", borderRadius: "16px", background: report.bg, color: report.color, display: "flex", justifyContent: "center", alignItems: "center", fontSize: "22px" }}>
+              <motion.div 
+                key={index} 
+                variants={cardVariants}
+                whileHover={{ y: -5, backgroundColor: "rgba(255, 255, 255, 0.04)", boxShadow: `0 20px 30px -10px ${report.glow}` }}
+                style={styles.metricCard}
+              >
+                <div style={styles.metricCardHeader}>
+                  <div style={{ ...styles.iconBox, background: `rgba(${report.color === "#6366f1" ? "99,102,241" : report.color === "#10b981" ? "16,185,129" : report.color === "#f59e0b" ? "245,158,11" : "239,68,68"}, 0.12)`, color: report.color }}>
                     {report.icon}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "4px", backgroundColor: report.status === "up" ? "#d1fae5" : "#fee2e2", padding: "6px 14px", borderRadius: "100px", color: report.status === "up" ? "#065f46" : "#991b1b", fontSize: "13px", fontWeight: "700" }}>
-                    {report.status === "up" ? <FaArrowUp size={11} /> : <FaArrowDown size={11} />} {report.growth}
+                  <div style={{
+                    ...styles.growthBadge,
+                    backgroundColor: report.status === "up" ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)",
+                    color: report.status === "up" ? "#34d399" : "#f87171"
+                  }}>
+                    {report.status === "up" ? <FaArrowUp size={10} /> : <FaArrowDown size={10} />} {report.growth}
                   </div>
                 </div>
-                <p style={{ color: "#64748b", fontSize: "14px", fontWeight: "500", margin: "0 0 6px 0", letterSpacing: "0.01em" }}>{report.title}</p>
-                <h2 style={{ fontSize: "30px", fontWeight: "700", color: "#0f172a", margin: 0, letterSpacing: "-0.03em" }}>{report.value}</h2>
-              </div>
+                <p style={styles.metricCardTitle}>{report.title}</p>
+                <h2 style={styles.metricCardValue}>{report.value}</h2>
+              </motion.div>
             ))}
           </div>
 
-          {/* VISUAL DATA PLOTS CHART AREA */}
-          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr", gap: "32px" }}>
-            <div style={{ background: "white", borderRadius: "24px", padding: isMobile ? "20px" : "32px", boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)", border: "1px solid #e2e8f0" }}>
-              <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0f172a", margin: "0 0 24px 0" }}>{selectedPeriod} Distribution Analysis</h2>
-              <div style={{ width: "100%", height: isMobile ? 260 : 320 }}>
+          {/* VISUAL ANALYTICS LAYOUT SECTION */}
+          <div style={{ ...styles.bottomDashboardLayout, gridTemplateColumns: isMobile ? "1fr" : "2fr 1fr" }}>
+            
+            {/* BAR CHART GRAPH WORKSTATION */}
+            <motion.div variants={cardVariants} style={styles.glassPanelCard}>
+              <h2 style={styles.panelHeading}>{selectedPeriod} Distribution Analysis</h2>
+              <div style={{ width: "100%", height: isMobile ? 260 : 330 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 13, fontWeight: 500 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 13, fontWeight: 500 }} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-                    <Bar dataKey="amount" radius={[6, 6, 0, 0]} maxBarSize={45}>
+                  <BarChart data={salesChartData} margin={{ top: 10, right: 10, left: -22, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                    <Bar dataKey="amount" radius={[6, 6, 0, 0]} maxBarSize={40}>
                       {salesChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill="url(#purpleBlueGrad)" />
+                        <Cell key={`cell-${index}`} fill="url(#premiumReportGrad)" />
                       ))}
                     </Bar>
                     <defs>
-                      <linearGradient id="purpleBlueGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" />
+                      <linearGradient id="premiumReportGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#818cf8" />
                         <stop offset="100%" stopColor="#4f46e5" />
                       </linearGradient>
                     </defs>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            </motion.div>
 
-            {/* AUDIT LOG PANEL */}
-            <div style={{ background: "white", borderRadius: "24px", padding: isMobile ? "20px" : "32px", boxShadow: "0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)", border: "1px solid #e2e8f0" }}>
-              <h2 style={{ fontSize: "20px", fontWeight: "700", color: "#0f172a", marginBottom: "24px" }}>Recent Audit Tracks</h2>
-              {recentLiveReports.map((report, index) => (
-                <div key={index} style={{ padding: "16px", borderRadius: "20px", background: "#f8fafc", marginBottom: "16px", border: "1px solid #f1f5f9", display: "flex", gap: "14px", alignItems: "flex-start" }}>
-                  <div style={{ color: report.status === "Completed" ? "#10b981" : "#f59e0b", marginTop: "2px", fontSize: "16px" }}>
-                    {report.status === "Completed" ? <FaCheckCircle /> : <FaClock />}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: "0 0 4px 0", color: "#1e293b", fontSize: "15px", fontWeight: "600" }}>{report.name}</h4>
-                    <p style={{ margin: "0 0 12px 0", color: "#64748b", fontSize: "13px" }}>{report.date}</p>
-                    <span style={{ background: report.status === "Completed" ? "#d1fae5" : "#fef3c7", color: report.status === "Completed" ? "#065f46" : "#92400e", padding: "4px 12px", borderRadius: "100px", fontSize: "11px", fontWeight: "700", letterSpacing: "0.02em" }}>
-                      {report.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {/* AUDIT LOG MODULE WITH PREMIUM IMAGES */}
+            <motion.div variants={cardVariants} style={styles.glassPanelCard}>
+              <h2 style={styles.panelHeading}>Recent Audit Tracks</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {recentLiveReports.map((report, index) => {
+                  const itemThumbnail = REPORT_THEME_IMAGES[report.name] || REPORT_THEME_IMAGES.Default;
+                  const isCompleted = report.status === "Completed";
+                  
+                  return (
+                    <motion.div 
+                      key={index}
+                      variants={itemVariants}
+                      whileHover={{ x: 4, backgroundColor: "rgba(255,255,255,0.03)" }}
+                      style={styles.auditLogItem}
+                    >
+                      {/* DYNAMIC PHOTO THUMBNAIL INTEGRATION */}
+                      <div style={styles.thumbnailWrapper}>
+                        <img src={itemThumbnail} alt={report.name} style={styles.auditImage} />
+                        <div style={styles.thumbnailStatusIconBox}>
+                          {isCompleted ? (
+                            <FaCheckCircle style={{ color: "#10b981", fontSize: "11px" }} />
+                          ) : (
+                            <FaClock style={{ color: "#f59e0b", fontSize: "11px" }} />
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h4 style={styles.auditItemName}>{report.name}</h4>
+                        <p style={styles.auditItemDate}>{report.date}</p>
+                        <span style={{
+                          ...styles.auditStatusBadge,
+                          background: isCompleted ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
+                          color: isCompleted ? "#34d399" : "#fbbf24"
+                        }}>
+                          {report.status}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+
           </div>
-
-        </div>
+        </motion.div>
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    display: "flex", height: "100vh", 
+    backgroundColor: "#0b0f19",
+    overflowX: "hidden", overflowY: "hidden",
+    fontFamily: "system-ui, -apple-system, sans-serif",
+    position: "relative"
+  },
+  loaderCanvas: { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "#0b0f19" },
+  spinnerElement: { border: "3px solid rgba(255,255,255,0.05)", borderTop: "3px solid #6366f1", borderRadius: "50%", width: "36px", height: "36px", animation: "spin 0.8s linear infinite" },
+  stickyTopNav: { position: "sticky", top: 0, zIndex: 90, background: "rgba(11, 15, 25, 0.75)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255, 255, 255, 0.05)" },
+  ambientBlobLeft: { position: "absolute", width: "350px", height: "350px", top: "15%", left: "-100px", borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)", filter: "blur(20px)", pointerEvents: "none", zIndex: 1 },
+  ambientBlobRight: { position: "absolute", width: "400px", height: "400px", bottom: "10%", right: "-150px", borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)", filter: "blur(30px)", pointerEvents: "none", zIndex: 1 },
+  toastNotification: {
+    position: "fixed", top: "32px", right: "32px", background: "#1e293b", padding: "16px 24px",
+    borderRadius: "16px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+    display: "flex", alignItems: "center", gap: "12px", zIndex: 999999, border: "1px solid rgba(255,255,255,0.08)"
+  },
+  welcomeBanner: {
+    background: "linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%)", 
+    borderRadius: "24px", padding: "36px 40px", color: "white", marginBottom: "32px", position: "relative",
+    overflow: "hidden", display: "flex", justifyContent: "space-between", alignItems: "center",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
+    boxShadow: "0 20px 40px -15px rgba(0,0,0,0.6)"
+  },
+  bannerOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "radial-gradient(circle at bottom right, rgba(124,58,237,0.12) 0%, transparent 65%)", zIndex: 1 },
+  bannerBadge: { background: "rgba(99, 102, 241, 0.15)", color: "#a5b4fc", fontSize: "11px", fontWeight: "700", padding: "5px 12px", borderRadius: "6px", letterSpacing: "0.5px", display: "inline-block", marginBottom: "14px" },
+  bannerSubtitle: { opacity: 0.7, margin: 0, fontSize: "14.5px", lineHeight: "1.6" },
+  bannerVectorGraphic: { width: "120px", height: "120px", position: "relative", zIndex: 2, opacity: 0.7 },
+  errorPanel: { padding: "16px", background: "rgba(239, 68, 68, 0.1)", color: "#f87171", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "16px", marginBottom: "32px", fontWeight: "600" },
+  controlRow: { display: "flex", justifyContent: "space-between", alignItems: "stretch", gap: "16px", marginBottom: "32px" },
+  filterWrapper: { display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.03)", padding: "0 18px", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.06)", height: "46px", transition: "all 0.2s" },
+  dropdownElement: { border: "none", outline: "none", background: "transparent", fontSize: "14.5px", fontWeight: "600", cursor: "pointer", color: "#ffffff", width: "110px" },
+  downloadReportBtn: { border: "none", padding: "12px 24px", borderRadius: "14px", background: "linear-gradient(135deg, #4f46e5, #6366f1)", color: "white", display: "flex", justifyContent: "center", alignItems: "center", gap: "10px", cursor: "pointer", fontWeight: "600", boxShadow: "0 4px 14px rgba(79, 70, 229, 0.3)" },
+  metricsGrid: { display: "grid", gap: "24px", marginBottom: "32px" },
+  metricCard: { background: "rgba(255, 255, 255, 0.02)", borderRadius: "20px", padding: "24px", border: "1px solid rgba(255, 255, 255, 0.05)", boxSBox: "border-box", transition: "all 0.3s" },
+  metricCardHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" },
+  iconBox: { width: "46px", height: "46px", borderRadius: "14px", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "18px" },
+  growthBadge: { display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "100px", fontSize: "12px", fontWeight: "700" },
+  metricCardTitle: { color: "#64748b", fontSize: "13.5px", fontWeight: "600", margin: "0 0 6px 0", letterSpacing: "0.01em", textTransform: "uppercase" },
+  metricCardValue: { fontSize: "28px", fontWeight: "700", color: "#ffffff", margin: 0, letterSpacing: "-0.02em" },
+  bottomDashboardLayout: { display: "grid", gap: "32px" },
+  glassPanelCard: { background: "rgba(255, 255, 255, 0.02)", borderRadius: "24px", padding: "28px", border: "1px solid rgba(255, 255, 255, 0.05)", boxShadow: "0 20px 40px -15px rgba(0,0,0,0.3)" },
+  panelHeading: { fontSize: "18px", fontWeight: "700", color: "#ffffff", margin: "0 0 24px 0", letterSpacing: "-0.01em" },
+  chartTooltip: { backgroundColor: "#0f172a", color: "#fff", padding: "10px 14px", borderRadius: "10px", fontSize: "13px", fontWeight: "600", border: "1px solid rgba(255,255,255,0.1)" },
+  auditLogItem: { padding: "14px", borderRadius: "16px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.04)", display: "flex", gap: "14px", alignItems: "center", transition: "all 0.2s" },
+  thumbnailWrapper: { position: "relative", width: "44px", height: "44px", borderRadius: "10px", overflow: "hidden", background: "#1e293b", flexShrink: 0 },
+  auditImage: { width: "100%", height: "100%", objectFit: "cover" },
+  thumbnailStatusIconBox: { position: "absolute", bottom: "-2px", right: "-2px", background: "#0b0f19", width: "18px", height: "18px", borderRadius: "50%", display: "flex", justifyContent: "center", alignItems: "center", border: "1px solid rgba(255,255,255,0.05)" },
+  auditItemName: { margin: "0 0 3px 0", color: "#e2e8f0", fontSize: "14.5px", fontWeight: "600", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  auditItemDate: { margin: "0 0 10px 0", color: "#64748b", fontSize: "12.5px" },
+  auditStatusBadge: { padding: "3px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: "700", letterSpacing: "0.02em" }
+};
 
 export default ReportsPage;

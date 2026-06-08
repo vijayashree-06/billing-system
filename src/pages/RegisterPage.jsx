@@ -6,6 +6,8 @@ import {
   FaUser, 
   FaEnvelope, 
   FaLock, 
+  FaEye, 
+  FaEyeSlash, 
   FaUserTag, 
   FaArrowLeft, 
   FaCheckCircle, 
@@ -21,6 +23,8 @@ function RegisterPage() {
     password: "",
     role: "cashier",
   });
+  
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -29,8 +33,23 @@ function RegisterPage() {
     navigate("/login");
   };
 
+  // Framer Motion Animation Configurations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.08 } }
+  };
+
+  const itemVariants = {
+    hidden: { y: 15, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  };
+
   return (
     <div style={styles.container}>
+      {/* MATCHING PREMIUM HIGH-TECH ABSTRACT WAVE BACKGROUND LAYER */}
+      <div style={styles.bgImageLayer} />
+      <div style={styles.bgColorOverlay} />
+
       {/* Animated Floating Organic Background Mesh Orbs */}
       <motion.div 
         animate={{ y: [0, -25, 0], scale: [1, 1.08, 1] }}
@@ -74,6 +93,22 @@ function RegisterPage() {
         .input-wrapper:focus-within svg {
           color: #4f46e5 !important;
         }
+        
+        .input-wrapper:focus-within .visibility-toggle {
+          color: #4f46e5 !important;
+        }
+
+        /* Moving Grid Animation Lines for Left Graphic Panel */
+        @keyframes moveGrid {
+          0% { background-position: 0 0; }
+          100% { background-position: 40px 40px; }
+        }
+        .animated-grid {
+          background-size: 40px 40px;
+          background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                            linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+          animation: moveGrid 8s linear infinite;
+        }
       `}</style>
 
       {/* BACK NAVIGATION BUTTON */}
@@ -95,7 +130,7 @@ function RegisterPage() {
       >
         
         {/* LEFT SIDE: GRAPHICAL BENEFITS PRESENTATION PANEL */}
-        <div style={styles.graphicPanel}>
+        <div style={styles.graphicPanel} className="animated-grid">
           <div style={styles.graphicOverlay} />
           
           <div style={{ position: "relative", zIndex: 2, width: "100%" }}>
@@ -110,6 +145,20 @@ function RegisterPage() {
             <p style={styles.panelSubtitle}>
               Create your corporate operational node to deploy automated invoice generations, register items pipelines, and track processing states.
             </p>
+
+            {/* FLOATING IMAGE WORKSPACE ILLUSTRATION DISPLAY */}
+            <motion.div 
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              style={styles.imageContainer}
+            >
+              <img 
+                src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=600&q=80" 
+                alt="Corporate Infrastructure Workspace" 
+                style={styles.panelImage}
+              />
+              <div style={styles.imageGlassOverlay} />
+            </motion.div>
 
             {/* Core Features Micro Vertical List Graphic */}
             <div style={styles.featuresContainer}>
@@ -134,7 +183,12 @@ function RegisterPage() {
         </div>
 
         {/* RIGHT SIDE: INTERACTIVE INPUT FORM CARD */}
-        <div style={styles.formPanel}>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          style={styles.formPanel}
+        >
           {/* TITLE HEADER */}
           <h1 className="glow-text-dark" style={styles.title} onClick={() => navigate("/")}>
             Register
@@ -143,70 +197,81 @@ function RegisterPage() {
             Configure your terminal user credentials
           </p>
 
-          {/* REGISTRATION EXECUTION FORM */}
+          {/* REGISTRATION EXECUTION FORM (STAGGERED ANIMATIONS) */}
           <form onSubmit={handleRegister}>
-            
-            {/* FULL NAME ENTRY BOX */}
-            <div className="input-wrapper" style={styles.inputContainer}>
-              <FaUser style={styles.inputIcon} />
-              <input
-                type="text"
-                placeholder="Full Name"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                style={styles.input}
-              />
-            </div>
+            <motion.div variants={containerVariants} initial="hidden" animate="visible" style={{ display: "flex", flexDirection: "column" }}>
+              
+              {/* FULL NAME ENTRY BOX */}
+              <motion.div variants={itemVariants} className="input-wrapper" style={styles.inputContainer}>
+                <FaUser style={styles.inputIcon} />
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  style={styles.input}
+                />
+              </motion.div>
 
-            {/* EMAIL ENTRY BOX */}
-            <div className="input-wrapper" style={styles.inputContainer}>
-              <FaEnvelope style={styles.inputIcon} />
-              <input
-                type="email"
-                placeholder="Work Email Address"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                style={styles.input}
-              />
-            </div>
+              {/* EMAIL ENTRY BOX */}
+              <motion.div variants={itemVariants} className="input-wrapper" style={styles.inputContainer}>
+                <FaEnvelope style={styles.inputIcon} />
+                <input
+                  type="email"
+                  placeholder="Work Email Address"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  style={styles.input}
+                />
+              </motion.div>
 
-            {/* SECURITY PASSWORD ENTRY BOX */}
-            <div className="input-wrapper" style={styles.inputContainer}>
-              <FaLock style={styles.inputIcon} />
-              <input
-                type="password"
-                placeholder="Security Password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                style={styles.input}
-              />
-            </div>
+              {/* SECURITY PASSWORD ENTRY BOX WITH VISIBILITY TOGGLE */}
+              <motion.div variants={itemVariants} className="input-wrapper" style={styles.inputContainer}>
+                <FaLock style={styles.inputIcon} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Security Password"
+                  required
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  style={styles.input}
+                />
+                <button
+                  type="button"
+                  className="visibility-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={styles.toggleButton}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </motion.div>
 
-            {/* DEPLOYMENT TERMINAL ROLE SELECTOR Dropdown Wrapper */}
-            <div className="input-wrapper" style={styles.inputContainer}>
-              <FaUserTag style={styles.inputIcon} />
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                style={styles.selectInput}
+              {/* DEPLOYMENT TERMINAL ROLE SELECTOR Dropdown Wrapper */}
+              <motion.div variants={itemVariants} className="input-wrapper" style={styles.inputContainer}>
+                <FaUserTag style={styles.inputIcon} />
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  style={styles.selectInput}
+                >
+                  <option value="cashier">Profile Role: Cashier Register</option>
+                  <option value="manager">Profile Role: Branch Manager</option>
+                </select>
+              </motion.div>
+
+              {/* ACTION SUBMIT REGISTRATION BUTTON */}
+              <motion.button
+                variants={itemVariants}
+                type="submit"
+                whileHover={{ y: -2, scale: 1.01, boxShadow: "0 12px 24px -5px rgba(79, 70, 229, 0.35)" }}
+                whileTap={{ scale: 0.99 }}
+                style={styles.submitButton}
               >
-                <option value="cashier">Profile Role: Cashier Register</option>
-                <option value="manager">Profile Role: Branch Manager</option>
-              </select>
-            </div>
-
-            {/* ACTION SUBMIT REGISTRATION BUTTON */}
-            <motion.button
-              type="submit"
-              whileHover={{ y: -2, scale: 1.01, boxShadow: "0 12px 24px -5px rgba(79, 70, 229, 0.35)" }}
-              whileTap={{ scale: 0.99 }}
-              style={styles.submitButton}
-            >
-              Initialize Base Account
-            </motion.button>
+                Initialize Base Account
+              </motion.button>
+            </motion.div>
           </form>
 
           {/* LEAP LINK BACK TO LOGIN INTERFACE TERMINAL */}
@@ -220,7 +285,7 @@ function RegisterPage() {
               Login here
             </span>
           </p>
-        </div>
+        </motion.div>
 
       </motion.div>
     </div>
@@ -233,32 +298,47 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "radial-gradient(circle at top right, #f1f5f9, #e2e8f0)",
     padding: "24px",
     boxSizing: "border-box",
     position: "relative",
     overflow: "hidden",
     fontFamily: "system-ui, -apple-system, sans-serif",
   },
+  bgImageLayer: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundImage: `url('https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1600&q=80')`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    filter: "blur(12px)",
+    transform: "scale(1.06)",
+    zIndex: 0
+  },
+  bgColorOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: "radial-gradient(circle at top right, rgba(241, 245, 249, 0.8), rgba(226, 232, 240, 0.88))",
+    zIndex: 1
+  },
   splitWrapper: {
     width: "100%",
-    maxWidth: "960px",
-    minHeight: "580px",
-    background: "rgba(255, 255, 255, 0.45)",
-    backdropFilter: "blur(20px)",
-    WebkitBackdropFilter: "blur(20px)",
+    maxWidth: "1020px",
+    minHeight: "640px",
+    background: "rgba(255, 255, 255, 0.55)",
+    backdropFilter: "blur(24px)",
+    WebkitBackdropFilter: "blur(24px)",
     borderRadius: "32px",
-    border: "1px solid rgba(255, 255, 255, 0.6)",
-    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.08)",
+    border: "1px solid rgba(255, 255, 255, 0.7)",
+    boxShadow: "0 25px 50px -12px rgba(15, 23, 42, 0.15)",
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))",
     overflow: "hidden",
     position: "relative",
     zIndex: 5
   },
   graphicPanel: {
     background: "linear-gradient(135deg, #1e3a8a 0%, #312e81 100%)",
-    padding: "48px",
+    padding: "40px 48px",
     color: "#ffffff",
     display: "flex",
     flexDirection: "column",
@@ -269,7 +349,7 @@ const styles = {
   graphicOverlay: {
     position: "absolute",
     top: 0, left: 0, right: 0, bottom: 0,
-    background: "radial-gradient(circle at bottom left, rgba(6,182,212,0.15) 0%, transparent 65%)",
+    background: "radial-gradient(circle at bottom left, rgba(6,182,212,0.18) 0%, transparent 65%)",
     pointerEvents: "none"
   },
   badge: {
@@ -283,28 +363,50 @@ const styles = {
     fontSize: "13px",
     fontWeight: "600",
     color: "#38bdf8",
-    marginBottom: "24px"
+    marginBottom: "20px"
   },
   panelTitle: {
-    fontSize: "32px",
+    fontSize: "30px",
     fontWeight: "800",
-    lineHeight: "1.2",
-    margin: "0 0 16px 0",
+    lineHeight: "1.25",
+    margin: "0 0 12px 0",
     letterSpacing: "-0.01em"
   },
   panelSubtitle: {
-    fontSize: "15px",
+    fontSize: "14px",
     lineHeight: "1.6",
     color: "#cbd5e1",
-    margin: "0 0 36px 0",
-    maxWidth: "380px"
+    margin: "0 0 28px 0",
+    maxWidth: "400px"
+  },
+  imageContainer: {
+    position: "relative",
+    width: "100%",
+    borderRadius: "20px",
+    overflow: "hidden",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+    border: "1px solid rgba(255, 255, 255, 0.12)",
+    marginBottom: "28px",
+    height: "170px"
+  },
+  panelImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block"
+  },
+  imageGlassOverlay: {
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: "linear-gradient(to bottom, transparent 40%, rgba(30, 58, 138, 0.4))",
+    pointerEvents: "none"
   },
   featuresContainer: {
-    background: "rgba(255, 255, 255, 0.05)",
+    background: "rgba(255, 255, 255, 0.04)",
     backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.06)",
     borderRadius: "20px",
-    padding: "24px",
+    padding: "20px 24px",
     width: "100%",
     boxSizing: "border-box"
   },
@@ -313,7 +415,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    background: "rgba(255, 255, 255, 0.4)",
+    background: "rgba(255, 255, 255, 0.35)",
     boxSizing: "border-box",
   },
   backBtn: {
@@ -324,8 +426,8 @@ const styles = {
     alignItems: "center",
     gap: "8px",
     padding: "10px 18px",
-    background: "rgba(255, 255, 255, 0.5)",
-    border: "1px solid rgba(255, 255, 255, 0.6)",
+    background: "rgba(255, 255, 255, 0.6)",
+    border: "1px solid rgba(255, 255, 255, 0.7)",
     borderRadius: "14px",
     fontSize: "14px",
     fontWeight: "600",
@@ -335,10 +437,10 @@ const styles = {
     backdropFilter: "blur(10px)"
   },
   title: {
-    fontSize: "38px",
+    fontSize: "36px",
     fontWeight: "800",
     color: "#4f46e5",
-    margin: "0 0 8px 0",
+    margin: "0 0 6px 0",
     letterSpacing: "-0.5px",
     textAlign: "left",
     cursor: "pointer",
@@ -347,17 +449,17 @@ const styles = {
   subtitle: {
     fontSize: "15px",
     color: "#6b7280",
-    margin: "0 0 32px 0",
+    margin: "0 0 28px 0",
     fontWeight: "500"
   },
   inputContainer: {
     display: "flex",
     alignItems: "center",
     width: "100%",
-    background: "rgba(255, 255, 255, 0.6)",
+    background: "rgba(255, 255, 255, 0.7)",
     border: "1px solid #e2e8f0",
     borderRadius: "16px",
-    marginBottom: "16px",
+    marginBottom: "14px",
     padding: "0 16px",
     boxSizing: "border-box",
     transition: "all 0.25s ease"
@@ -377,6 +479,18 @@ const styles = {
     fontSize: "15px",
     color: "#1e293b",
     width: "100%"
+  },
+  toggleButton: {
+    background: "none",
+    border: "none",
+    color: "#94a3b8",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0 4px",
+    fontSize: "16px",
+    transition: "color 0.25s ease"
   },
   selectInput: {
     flex: 1,
@@ -400,7 +514,7 @@ const styles = {
     fontWeight: "700",
     fontSize: "15px",
     cursor: "pointer",
-    marginTop: "12px"
+    marginTop: "8px"
   },
   loginRedirectText: {
     fontSize: "14px",
@@ -421,10 +535,10 @@ const styles = {
     width: "600px",
     height: "600px",
     borderRadius: "50%",
-    background: "radial-gradient(circle, rgba(79,70,229,0.07) 0%, rgba(255,255,255,0) 70%)",
+    background: "radial-gradient(circle, rgba(79,70,229,0.1) 0%, rgba(255,255,255,0) 70%)",
     top: "-150px",
     left: "-150px",
-    zIndex: 1,
+    zIndex: 2,
     pointerEvents: "none"
   },
   bgBlobRight: {
@@ -432,10 +546,10 @@ const styles = {
     width: "600px",
     height: "600px",
     borderRadius: "50%",
-    background: "radial-gradient(circle, rgba(6,182,212,0.05) 0%, rgba(255,255,255,0) 70%)",
+    background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, rgba(255,255,255,0) 70%)",
     bottom: "-150px",
     right: "-150px",
-    zIndex: 1,
+    zIndex: 2,
     pointerEvents: "none"
   }
 };
