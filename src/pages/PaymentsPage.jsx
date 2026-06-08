@@ -13,7 +13,6 @@ import {
   FaTimes,
   FaChartBar,
   FaArrowUp,
-  FaArrowDown,
 } from "react-icons/fa";
 
 function PaymentsPage() {
@@ -34,7 +33,7 @@ function PaymentsPage() {
     status: "Completed",
   });
 
-  // INITIAL DUMMY DATA (Only used if localStorage is empty)
+  // INITIAL DUMMY DATA
   const defaultPayments = [
     {
       id: "PAY-1001",
@@ -62,30 +61,25 @@ function PaymentsPage() {
     },
   ];
 
-  // PAYMENTS STATE (Initialized directly from localStorage if it exists)
   const [payments, setPayments] = useState(() => {
     const savedPayments = localStorage.getItem("payments_data");
     return savedPayments ? JSON.parse(savedPayments) : defaultPayments;
   });
 
-  // EFFECT TO SAVE PAYMENTS TO LOCALSTORAGE WHEN STATE CHANGES
   useEffect(() => {
     localStorage.setItem("payments_data", JSON.stringify(payments));
   }, [payments]);
 
-  // FILTER
   const filteredPayments = payments.filter((payment) =>
     payment.customer.toLowerCase().includes(search.toLowerCase())
   );
 
-  // DELETE
   const deletePayment = (id) => {
     if (window.confirm("Are you sure you want to delete this payment record?")) {
       setPayments(payments.filter((payment) => payment.id !== id));
     }
   };
 
-  // CREATE PAYMENT
   const createPayment = () => {
     if (!newPayment.customer || !newPayment.amount) {
       alert("Please fill all fields");
@@ -115,12 +109,11 @@ function PaymentsPage() {
     });
   };
 
-  // --- DYNAMIC CALCULATIONS FOR THE CHANNELS CHART ---
   const getVolumeByMethod = (method) => {
     return payments
       .filter((p) => p.method === method)
       .reduce((acc, curr) => {
-        const num = parseInt(curr.amount.replace(/[^0-9]/g, ""), 10);
+        const num = parseFloat(curr.amount.replace(/[^0-9.]/g, ""));
         return acc + (isNaN(num) ? 0 : num);
       }, 0);
   };
@@ -136,85 +129,87 @@ function PaymentsPage() {
 
   return (
     <div style={styles.pageContainer}>
-      {/* HIGH-DENSITY VISUAL GLOW & ANIMATION ENGINE */}
+      
+      {/* GRAPHIC BLOB SHAPES */}
+      <div style={styles.ambientBlob1}></div>
+      <div style={styles.ambientBlob2}></div>
+
       <style>{`
         @keyframes modalSlideUp {
-          from { opacity: 0; transform: translate3d(0, 30px, 0) scale(0.98); }
+          from { opacity: 0; transform: translate3d(0, 40px, 0) scale(0.95); }
           to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
         @keyframes backdropFade {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from { opacity: 0; backdrop-filter: blur(0px); }
+          to { opacity: 1; backdrop-filter: blur(12px); }
         }
         @keyframes fillBar {
           from { height: 0%; }
         }
+        @keyframes subtlePulse {
+          0% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); border-color: rgba(99, 102, 241, 0.4); }
+          50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.6); border-color: rgba(168, 85, 247, 0.7); }
+          100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); border-color: rgba(99, 102, 241, 0.4); }
+        }
         
+        /* TOUCH & HOVER ACTIVATED GLOW FOR THE CHART CARD */
+        .chart-card-glow-interactive {
+          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          background: linear-gradient(145deg, rgba(22, 23, 43, 0.75), rgba(15, 16, 32, 0.8)) !important;
+          cursor: pointer;
+        }
+        
+        .chart-card-glow-interactive:hover,
+        .chart-card-glow-interactive:active {
+          animation: subtlePulse 3s infinite ease-in-out;
+          background: linear-gradient(145deg, rgba(30, 32, 66, 0.9), rgba(22, 23, 43, 0.95)) !important;
+          transform: translate3d(0, -2px, 0);
+        }
+
+        /* Amplify individual bar highlights inside when parent is hovered */
+        .chart-card-glow-interactive:hover .chart-bar-fill {
+          filter: brightness(1.3) drop-shadow(0 0 6px rgba(255, 255, 255, 0.2));
+        }
+
         .premium-glow-trigger {
           position: relative;
           z-index: 1;
-          backface-visibility: hidden;
-          transform: translate3d(0, 0, 0);
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
         .premium-glow-trigger:hover {
-          transform: translate3d(0, -3px, 0) !important;
-          box-shadow: 
-            0 0 0 2px rgba(255, 255, 255, 0.2),
-            0 10px 25px rgba(79, 70, 229, 0.45) !important;
+          transform: translate3d(0, -2px, 0) !important;
+          box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4) !important;
+          filter: brightness(1.15);
         }
 
         .stat-card-glow {
-          backface-visibility: hidden;
-          transform: translate3d(0, 0, 0);
-          transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
         }
-        
-        .total-pay-card { box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.06) !important; }
-        .total-pay-card:hover {
-          transform: translate3d(0, -6px, 0);
-          border-color: rgba(79, 70, 229, 0.3) !important;
-          box-shadow: 0 12px 24px -4px rgba(79, 70, 229, 0.12), 0 24px 48px -8px rgba(79, 70, 229, 0.24) !important;
+        .stat-card-glow:hover {
+          transform: translate3d(0, -4px, 0);
+          border-color: rgba(255, 255, 255, 0.15) !important;
+          background: rgba(30, 32, 59, 0.75) !important;
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
         }
 
-        .completed-pay-card { box-shadow: 0 4px 20px -2px rgba(22, 163, 74, 0.06) !important; }
-        .completed-pay-card:hover {
-          transform: translate3d(0, -6px, 0);
-          border-color: rgba(22, 163, 74, 0.3) !important;
-          box-shadow: 0 12px 24px -4px rgba(22, 163, 74, 0.12), 0 24px 48px -8px rgba(22, 163, 74, 0.24) !important;
+        .table-row-hover-effect { transition: background 0.2s ease; }
+        .table-row-hover-effect:hover { background: rgba(255, 255, 255, 0.03) !important; }
+
+        .action-btn-node {
+          transition: all 0.2s ease;
+        }
+        .action-btn-node:hover {
+          transform: scale(1.1);
         }
 
-        .pending-pay-card { box-shadow: 0 4px 20px -2px rgba(217, 119, 6, 0.06) !important; }
-        .pending-pay-card:hover {
-          transform: translate3d(0, -6px, 0);
-          border-color: rgba(217, 119, 6, 0.3) !important;
-          box-shadow: 0 12px 24px -4px rgba(217, 119, 6, 0.12), 0 24px 48px -8px rgba(217, 119, 6, 0.24) !important;
-        }
-
-        .table-row-hover-effect { transition: background 0.25s ease; }
-        .table-row-hover-effect:hover { background: #f8fafc !important; }
-
-        .btn-interact-node {
-          backface-visibility: hidden;
-          transform: translate3d(0, 0, 0);
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-        .btn-interact-node:hover { transform: translate3d(0, -3px, 0) scale(1.08); }
-        .action-view-glow:hover {
-          background: #4f46e5 !important;
-          color: #ffffff !important;
-          box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4) !important;
-        }
-        .action-delete-glow:hover {
-          background: #dc2626 !important;
-          color: #ffffff !important;
-          box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4) !important;
-        }
-
-        /* CHART INTERNAL TRANSITIONS */
         .chart-bar-fill {
-          animation: fillBar 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: fillBar 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          transition: filter 0.3s ease, drop-shadow 0.3s ease;
+        }
+
+        select option {
+          background-color: #1a1b35;
+          color: #ffffff;
         }
       `}</style>
 
@@ -224,11 +219,12 @@ function PaymentsPage() {
       {/* MAIN CONTENT AREA */}
       <div style={styles.mainContent}>
         
-        {/* PREMIUM RADIENT HEADER HERO */}
+        {/* HERO BANNER */}
         <div style={styles.header}>
           <div style={{ position: "relative", zIndex: 2 }}>
-            <h1 style={styles.heading}>Payments</h1>
-            <p style={styles.subText}>Track all payment transactions easily and maintain balances</p>
+            <span style={styles.topBadge}>FINANCIAL HUB ACTIVE</span>
+            <h1 style={styles.heading}>Payments Management</h1>
+            <p style={styles.subText}>Calibrate transactions, verify settlement logs, and manage network revenue streams.</p>
           </div>
 
           <button 
@@ -237,123 +233,102 @@ function PaymentsPage() {
             onClick={() => setShowModal(true)}
           >
             <FaPlus />
-            Add Payment
+            Deploy New Payment
           </button>
-          
-          <div style={{ position: "absolute", top: "-50px", right: "-30px", width: "200px", height: "200px", background: "rgba(255,255,255,0.07)", borderRadius: "50%" }}></div>
-          <div style={{ position: "absolute", bottom: "-40px", right: "140px", width: "120px", height: "120px", background: "rgba(255,255,255,0.04)", borderRadius: "50%" }}></div>
         </div>
 
-        {/* METRICS & LIVESTREAM CHART SECTION SPLIT BLOCK */}
+        {/* METRICS, CHART & IMAGE GRID BLOCK */}
         <div style={styles.dashboardTopSection}>
           
-          {/* STATS CARD COLUMN */}
+          {/* STATS COLUMN */}
           <div style={styles.statsColumn}>
-            <div className="stat-card-glow total-pay-card" style={styles.statCard}>
+            <div className="stat-card-glow" style={styles.statCard}>
               <div style={styles.statIconBlue}>
                 <FaMoneyBillWave />
               </div>
               <div style={{ flex: 1 }}>
                 <div style={styles.statMiniFlex}>
-                  <p style={styles.statLabel}>Total Payments</p>
-                  <span style={styles.trendingUpTag}><FaArrowUp size={10} /> Live</span>
+                  <p style={styles.statLabel}>TOTAL VALUATION VOLUME</p>
+                  <span style={styles.tagLive}><FaArrowUp size={8} /> Live</span>
                 </div>
                 <h2 style={styles.statValue}>
                   ₹
                   {(
                     payments.reduce((acc, curr) => {
-                      const num = parseInt(curr.amount.replace(/[^0-9]/g, ""), 10);
+                      const num = parseFloat(curr.amount.replace(/[^0-9.]/g, ""));
                       return acc + (isNaN(num) ? 0 : num);
                     }, 0) / 100000
-                  ).toFixed(1)}
+                  ).toFixed(2)}
                   L
                 </h2>
               </div>
             </div>
 
-            <div className="stat-card-glow completed-pay-card" style={styles.statCard}>
+            <div className="stat-card-glow" style={styles.statCard}>
               <div style={styles.statIconGreen}>
                 <FaCheckCircle />
               </div>
               <div style={{ flex: 1 }}>
                 <div style={styles.statMiniFlex}>
-                  <p style={styles.statLabel}>Completed</p>
-                  <span style={styles.stableTag}>Active</span>
+                  <p style={styles.statLabel}>COMPLETED PIPELINES</p>
+                  <span style={styles.tagActive}>Stable</span>
                 </div>
                 <h2 style={styles.statValue}>
                   {payments.filter((p) => p.status === "Completed").length}
                 </h2>
               </div>
             </div>
-
-            <div className="stat-card-glow pending-pay-card" style={styles.statCard}>
-              <div style={styles.statIconOrange}>
-                <FaClock />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={styles.statMiniFlex}>
-                  <p style={styles.statLabel}>Pending</p>
-                  {payments.filter((p) => p.status === "Pending").length > 0 ? (
-                    <span style={styles.trendingDownTag}>Action Req</span>
-                  ) : (
-                    <span style={styles.stableTag}>Clear</span>
-                  )}
-                </div>
-                <h2 style={styles.statValue}>
-                  {payments.filter((p) => p.status === "Pending").length}
-                </h2>
-              </div>
-            </div>
           </div>
 
-          {/* DYNAMIC REALTIME CUSTOM ENGINE METHOD CHART CARD */}
-          <div style={styles.chartCard}>
+          {/* PAYMENT CHANNELS CHART (NOW WITH INTERACTIVE HOVER/TOUCH GLOW) */}
+          <div className="chart-card-glow-interactive" style={styles.chartCard}>
             <div style={styles.chartHeader}>
               <div style={styles.chartHeaderIcon}>
                 <FaChartBar />
               </div>
               <div>
-                <h3 style={styles.chartTitle}>Payment Channels</h3>
-                <p style={styles.chartSubtitle}>Real-time breakdown by incoming source value</p>
+                <h3 style={styles.chartTitle}>Channel Tracking Metrics</h3>
+                <p style={styles.chartSubtitle}>Breakdown by source liquidity volume</p>
               </div>
             </div>
 
             <div style={styles.chartContainer}>
-              {/* Cash Bar */}
               <div style={styles.chartColumnLayout}>
                 <div style={styles.chartTrack}>
-                  <div 
-                    className="chart-bar-fill" 
-                    style={{ ...styles.chartBarFilled, height: `${cashHeight}%`, background: "linear-gradient(to top, #64748b, #94a3b8)" }}
-                  />
+                  <div className="chart-bar-fill" style={{ ...styles.chartBarFilled, height: `${cashHeight}%`, background: "linear-gradient(to top, #4b5563, #9ca3af)" }} />
                 </div>
                 <span style={styles.chartLabelText}>Cash</span>
                 <span style={styles.chartValueLabel}>₹{cashVolume.toLocaleString("en-IN")}</span>
               </div>
 
-              {/* UPI Bar */}
               <div style={styles.chartColumnLayout}>
                 <div style={styles.chartTrack}>
-                  <div 
-                    className="chart-bar-fill" 
-                    style={{ ...styles.chartBarFilled, height: `${upiHeight}%`, background: "linear-gradient(to top, #3b82f6, #60a5fa)" }}
-                  />
+                  <div className="chart-bar-fill" style={{ ...styles.chartBarFilled, height: `${upiHeight}%`, background: "linear-gradient(to top, #6366f1, #a5b4fc)" }} />
                 </div>
                 <span style={styles.chartLabelText}>UPI</span>
-                <span style={{ ...styles.chartValueLabel, color: "#3b82f6", fontWeight: "700" }}>₹{upiVolume.toLocaleString("en-IN")}</span>
+                <span style={{ ...styles.chartValueLabel, color: "#a5b4fc" }}>₹{upiVolume.toLocaleString("en-IN")}</span>
               </div>
 
-              {/* Card Bar */}
               <div style={styles.chartColumnLayout}>
                 <div style={styles.chartTrack}>
-                  <div 
-                    className="chart-bar-fill" 
-                    style={{ ...styles.chartBarFilled, height: `${cardHeight}%`, background: "linear-gradient(to top, #a855f7, #c084fc)" }}
-                  />
+                  <div className="chart-bar-fill" style={{ ...styles.chartBarFilled, height: `${cardHeight}%`, background: "linear-gradient(to top, #ec4899, #fbcfe8)" }} />
                 </div>
                 <span style={styles.chartLabelText}>Card</span>
                 <span style={styles.chartValueLabel}>₹{cardVolume.toLocaleString("en-IN")}</span>
               </div>
+            </div>
+          </div>
+
+          {/* DASHBOARD IMAGE CARD */}
+          <div style={styles.dashboardImageCard}>
+            <img 
+              src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=500&q=80" 
+              alt="Financial Analytics Landscape" 
+              style={styles.dashboardCardImage} 
+            />
+            <div style={styles.dashboardImageOverlay}>
+              <p style={styles.imageOverlayTitle}>Secure Ledger System</p>
+              <p style={styles.imageOverlaySub}>All transactional flows encrypted via localized hash state tokens.</p>
             </div>
           </div>
 
@@ -364,7 +339,7 @@ function PaymentsPage() {
           <FaSearch style={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Search customer lookup records..."
+            placeholder="Filter by customer token or identifier lookup..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={styles.searchInput}
@@ -378,21 +353,21 @@ function PaymentsPage() {
               <tr>
                 <th style={styles.th}>Payment ID</th>
                 <th style={styles.th}>Customer</th>
-                <th style={styles.th}>Amount</th>
-                <th style={styles.th}>Method</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Date</th>
-                <th style={styles.th}>Actions</th>
+                <th style={styles.th}>Amount Track</th>
+                <th style={styles.th}>Method Channel</th>
+                <th style={styles.th}>Status Node</th>
+                <th style={styles.th}>Date Logs</th>
+                <th style={styles.th}>Operational Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredPayments.map((payment, index) => (
                 <tr key={payment.id || index} className="table-row-hover-effect" style={styles.tr}>
-                  <td style={{ ...styles.td, color: "#4f46e5", fontWeight: "700" }}>{payment.id}</td>
-                  <td style={{ ...styles.td, fontWeight: "600", color: "#0f172a" }}>{payment.customer}</td>
-                  <td style={{ ...styles.td, fontWeight: "700" }}>{payment.amount}</td>
+                  <td style={{ ...styles.td, color: "#818cf8", fontWeight: "700" }}>{payment.id}</td>
+                  <td style={{ ...styles.td, fontWeight: "600", color: "#ffffff" }}>{payment.customer}</td>
+                  <td style={{ ...styles.td, fontWeight: "700", color: "#ffffff" }}>{payment.amount}</td>
                   <td style={styles.td}>
-                    <span style={{ ...styles.methodBadge, background: payment.method === "UPI" ? "#e0f2fe" : payment.method === "Card" ? "#f3e8ff" : "#f1f5f9", color: payment.method === "UPI" ? "#0369a1" : payment.method === "Card" ? "#6b21a8" : "#475569" }}>
+                    <span style={{ ...styles.methodBadge, background: payment.method === "UPI" ? "rgba(99,102,241,0.15)" : payment.method === "Card" ? "rgba(236,72,153,0.15)" : "rgba(255,255,255,0.08)", color: payment.method === "UPI" ? "#a5b4fc" : payment.method === "Card" ? "#fbcfe8" : "#9ca3af" }}>
                       {payment.method}
                     </span>
                   </td>
@@ -400,30 +375,29 @@ function PaymentsPage() {
                     <span
                       style={{
                         ...styles.status,
-                        background: payment.status === "Completed" ? "#dcfce7" : "#ffe4e6",
-                        color: payment.status === "Completed" ? "#166534" : "#991b1b",
+                        background: payment.status === "Completed" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+                        color: payment.status === "Completed" ? "#34d399" : "#f87171",
                       }}
                     >
                       {payment.status}
                     </span>
                   </td>
-                  <td style={{ ...styles.td, color: "#64748b" }}>{payment.date}</td>
+                  <td style={{ ...styles.td, color: "#9ca3af" }}>{payment.date}</td>
                   <td style={styles.td}>
                     <div style={styles.actionContainer}>
                       <button
-                        className="btn-interact-node action-view-glow"
+                        className="action-btn-node"
                         style={styles.viewButton}
                         onClick={() => setSelectedPayment(payment)}
-                        title="View Details"
+                        title="Inspect Record"
                       >
                         <FaEye />
                       </button>
-
                       <button
-                        className="btn-interact-node action-delete-glow"
+                        className="action-btn-node"
                         style={styles.deleteButton}
                         onClick={() => deletePayment(payment.id)}
-                        title="Delete Record"
+                        title="Purge Entry"
                       >
                         <FaTrash />
                       </button>
@@ -433,8 +407,8 @@ function PaymentsPage() {
               ))}
               {filteredPayments.length === 0 && (
                 <tr>
-                  <td colSpan="7" style={{ ...styles.td, textAlign: "center", color: "#94a3b8", padding: "40px" }}>
-                    No payment profiles matched your search.
+                  <td colSpan="7" style={{ ...styles.td, textAlign: "center", color: "#6b7280", padding: "40px" }}>
+                    No dynamic records matched configuration variables.
                   </td>
                 </tr>
               )}
@@ -442,221 +416,245 @@ function PaymentsPage() {
           </table>
         </div>
 
-        {/* INTERACTIVE ADD PAYMENT MODAL */}
+        {/* ADD PAYMENT MODAL */}
         {showModal && (
-          <div style={{ ...styles.modalOverlay, animation: "backdropFade 0.2s ease forwards" }}>
-            <div style={{ ...styles.modal, animation: "modalSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}>
-              <h2 style={styles.modalTitle}>Add Payment</h2>
-              
-              <label style={styles.fieldLabel}>Customer Name</label>
-              <input
-                type="text"
-                placeholder="E.g., Arun Kumar"
-                value={newPayment.customer}
-                onChange={(e) =>
-                  setNewPayment({ ...newPayment, customer: e.target.value })
-                }
-                style={styles.modalInput}
+          <div style={styles.modalOverlay}>
+            <div style={styles.modal}>
+              <img 
+                src="https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=600&q=80" 
+                alt="New Payment Flow Graphic" 
+                style={styles.modalBannerImage} 
               />
-              
-              <label style={styles.fieldLabel}>Amount (INR)</label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={newPayment.amount}
-                onChange={(e) =>
-                  setNewPayment({ ...newPayment, amount: e.target.value })
-                }
-                style={styles.modalInput}
-              />
-              
-              <label style={styles.fieldLabel}>Payment Mode</label>
-              <select
-                value={newPayment.method}
-                onChange={(e) =>
-                  setNewPayment({ ...newPayment, method: e.target.value })
-                }
-                style={styles.modalInput}
-              >
-                <option>Cash</option>
-                <option>UPI</option>
-                <option>Card</option>
-              </select>
-              
-              <label style={styles.fieldLabel}>Transaction Status</label>
-              <select
-                value={newPayment.status}
-                onChange={(e) =>
-                  setNewPayment({ ...newPayment, status: e.target.value })
-                }
-                style={styles.modalInput}
-              >
-                <option>Completed</option>
-                <option>Pending</option>
-              </select>
+              <div style={{ padding: "28px 32px" }}>
+                <h2 style={styles.modalTitle}>Deploy Payment Node</h2>
+                
+                <label style={styles.fieldLabel}>CUSTOMER NAME</label>
+                <input
+                  type="text"
+                  placeholder="E.g., Arun Kumar"
+                  value={newPayment.customer}
+                  onChange={(e) => setNewPayment({ ...newPayment, customer: e.target.value })}
+                  style={styles.modalInput}
+                />
+                
+                <label style={styles.fieldLabel}>EXCHANGE QUANTITY VALUE (INR)</label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={newPayment.amount}
+                  onChange={(e) => setNewPayment({ ...newPayment, amount: e.target.value })}
+                  style={styles.modalInput}
+                />
+                
+                <label style={styles.fieldLabel}>CHANNEL STREAM</label>
+                <select
+                  value={newPayment.method}
+                  onChange={(e) => setNewPayment({ ...newPayment, method: e.target.value })}
+                  style={styles.modalInput}
+                >
+                  <option value="Cash">Cash Channel</option>
+                  <option value="UPI">UPI Endpoint</option>
+                  <option value="Card">Card Gateway</option>
+                </select>
+                
+                <label style={styles.fieldLabel}>INITIAL TRANSACTION STATUS</label>
+                <select
+                  value={newPayment.status}
+                  onChange={(e) => setNewPayment({ ...newPayment, status: e.target.value })}
+                  style={styles.modalInput}
+                >
+                  <option value="Completed">Completed</option>
+                  <option value="Pending">Pending</option>
+                </select>
 
-              <div style={styles.modalBtnContainer}>
-                <button
-                  style={styles.cancelBtn}
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="premium-glow-trigger" 
-                  style={styles.createBtn} 
-                  onClick={createPayment}
-                >
-                  Add Transaction
-                </button>
+                <div style={styles.modalBtnContainer}>
+                  <button style={styles.cancelBtn} onClick={() => setShowModal(false)}>Abort</button>
+                  <button className="premium-glow-trigger" style={styles.createBtn} onClick={createPayment}>Deploy Node</button>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* INTERACTIVE VIEW PAYMENT MODAL */}
+        {/* INSPECT DETAIL MODAL */}
         {selectedPayment && (
-          <div style={{ ...styles.modalOverlay, animation: "backdropFade 0.2s ease forwards" }}>
-            <div style={{ ...styles.viewModal, animation: "modalSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}>
-              <button
-                style={styles.closeBtn}
-                onClick={() => setSelectedPayment(null)}
-              >
-                <FaTimes />
-              </button>
-
-              <div style={styles.viewHeader}>
-                <div style={styles.viewIcon}>
-                  <FaMoneyBillWave />
-                </div>
-                <div>
-                  <h2 style={styles.viewTitle}>Payment Details</h2>
-                  <p style={styles.viewSub}>Complete transaction receipt information</p>
-                </div>
+          <div style={styles.modalOverlay}>
+            <div style={styles.viewModal}>
+              <div style={styles.viewModalImageSide}>
+                <img 
+                  src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=500&q=80" 
+                  alt="Validation Asset Ledger Graphic" 
+                  style={styles.viewSideImage} 
+                />
+                <div style={styles.imageOverlayGradient} />
+                <div style={styles.imageTextBadge}>VERIFIED LEDGER</div>
               </div>
 
-              <div style={styles.detailsContainer}>
-                <div style={styles.detailBox}>
-                  <span style={styles.detailLabel}>Payment ID</span>
-                  <h3 style={styles.detailValue}>{selectedPayment.id}</h3>
-                </div>
-                <div style={styles.detailBox}>
-                  <span style={styles.detailLabel}>Customer</span>
-                  <h3 style={styles.detailValue}>{selectedPayment.customer}</h3>
-                </div>
-                <div style={styles.detailBox}>
-                  <span style={styles.detailLabel}>Amount</span>
-                  <h3 style={{ ...styles.detailValue, color: "#4f46e5", fontWeight: "800" }}>{selectedPayment.amount}</h3>
-                </div>
-                <div style={styles.detailBox}>
-                  <span style={styles.detailLabel}>Method</span>
-                  <h3 style={styles.detailValue}>{selectedPayment.method}</h3>
-                </div>
-                <div style={styles.detailBox}>
-                  <span style={styles.detailLabel}>Status</span>
+              <div style={styles.viewModalContentSide}>
+                <button style={styles.closeBtn} onClick={() => setSelectedPayment(null)}>
+                  <FaTimes />
+                </button>
+
+                <div style={styles.viewHeader}>
+                  <div style={styles.viewIcon}>
+                    <FaMoneyBillWave />
+                  </div>
                   <div>
-                    <span
-                      style={{
-                        ...styles.status,
-                        display: "inline-block",
-                        marginTop: "4px",
-                        background: selectedPayment.status === "Completed" ? "#dcfce7" : "#ffe4e6",
-                        color: selectedPayment.status === "Completed" ? "#166534" : "#991b1b",
-                      }}
-                    >
-                      {selectedPayment.status}
-                    </span>
+                    <h2 style={styles.viewTitle}>Node Inspection</h2>
+                    <p style={styles.viewSub}>Atomic details for selected financial data log</p>
                   </div>
                 </div>
-                <div style={styles.detailBox}>
-                  <span style={styles.detailLabel}>Settlement Date</span>
-                  <h3 style={styles.detailValue}>{selectedPayment.date}</h3>
+
+                <div style={styles.detailsContainer}>
+                  <div style={styles.detailBox}>
+                    <span style={styles.detailLabel}>Identifier Node</span>
+                    <h3 style={styles.detailValue}>{selectedPayment.id}</h3>
+                  </div>
+                  <div style={styles.detailBox}>
+                    <span style={styles.detailLabel}>Customer Track</span>
+                    <h3 style={styles.detailValue}>{selectedPayment.customer}</h3>
+                  </div>
+                  <div style={styles.detailBox}>
+                    <span style={styles.detailLabel}>Valuation Metric</span>
+                    <h3 style={{ ...styles.detailValue, color: "#6366f1", fontWeight: "800" }}>{selectedPayment.amount}</h3>
+                  </div>
+                  <div style={styles.detailBox}>
+                    <span style={styles.detailLabel}>Channel Pathway</span>
+                    <h3 style={styles.detailValue}>{selectedPayment.method}</h3>
+                  </div>
+                  <div style={styles.detailBox}>
+                    <span style={styles.detailLabel}>State Registry</span>
+                    <div>
+                      <span style={{ ...styles.status, display: "inline-block", marginTop: "6px", background: selectedPayment.status === "Completed" ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)", color: selectedPayment.status === "Completed" ? "#34d399" : "#f87171" }}>
+                        {selectedPayment.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={styles.detailBox}>
+                    <span style={styles.detailLabel}>Log Generation Timestamp</span>
+                    <h3 style={styles.detailValue}>{selectedPayment.date}</h3>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
 }
 
+// --- CORE STYLING VARIABLES ---
 const styles = {
   pageContainer: {
     display: "flex",
     height: "100vh",
-    background: "#f8fafc",
+    backgroundColor: "#0b0c16",
     overflow: "hidden",
+    position: "relative",
     fontFamily: "system-ui, -apple-system, sans-serif",
+  },
+  ambientBlob1: {
+    position: "absolute",
+    width: "450px",
+    height: "450px",
+    top: "-100px",
+    right: "10%",
+    background: "radial-gradient(circle, rgba(124, 58, 237, 0.25) 0%, transparent 70%)",
+    zIndex: 0,
+    pointerEvents: "none",
+  },
+  ambientBlob2: {
+    position: "absolute",
+    width: "600px",
+    height: "600px",
+    bottom: "-150px",
+    left: "20%",
+    background: "radial-gradient(circle, rgba(14, 116, 144, 0.2) 0%, transparent 70%)",
+    zIndex: 0,
+    pointerEvents: "none",
   },
   mainContent: {
     flex: 1,
     height: "100vh",
-    padding: "40px 30px",
+    padding: "32px",
     overflowY: "auto",
     overflowX: "hidden",
     boxSizing: "border-box",
+    position: "relative",
+    zIndex: 1,
   },
   header: {
     position: "relative",
-    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
-    padding: "36px 40px",
-    borderRadius: "24px",
+    background: "linear-gradient(135deg, rgba(26, 28, 54, 0.95), rgba(18, 19, 38, 0.95))",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
+    padding: "32px 40px",
+    borderRadius: "20px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     flexWrap: "wrap",
     gap: "20px",
-    marginBottom: "32px",
-    boxShadow: "0 10px 25px -5px rgba(79, 70, 229, 0.25)",
-    overflow: "hidden",
+    marginBottom: "28px",
+    boxShadow: "0 20px 40px rgba(0, 0, 0, 0.4)",
+  },
+  topBadge: {
+    display: "inline-block",
+    background: "rgba(99, 102, 241, 0.15)",
+    color: "#a5b4fc",
+    fontSize: "11px",
+    fontWeight: "700",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    letterSpacing: "0.06em",
+    marginBottom: "12px",
   },
   heading: {
-    fontSize: "36px",
+    fontSize: "32px",
     fontWeight: "800",
     color: "#ffffff",
     margin: 0,
     letterSpacing: "-0.02em",
   },
   subText: {
-    color: "rgba(255,255,255,0.85)",
-    fontSize: "15px",
+    color: "#9ca3af",
+    fontSize: "14px",
     margin: 0,
-    marginTop: "6px",
-    fontWeight: "500",
+    marginTop: "8px",
+    fontWeight: "400",
   },
   addButton: {
     border: "none",
-    background: "#ffffff",
-    color: "#4f46e5",
+    background: "#6366f1",
+    color: "#ffffff",
     padding: "14px 24px",
-    borderRadius: "14px",
+    borderRadius: "12px",
     cursor: "pointer",
     fontWeight: "700",
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+    boxShadow: "0 4px 14px rgba(99, 102, 241, 0.4)",
   },
   dashboardTopSection: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "32px",
-    marginBottom: "32px",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: "24px",
+    marginBottom: "28px",
     alignItems: "stretch",
-    flexWrap: "wrap",
   },
   statsColumn: {
     display: "flex",
     flexDirection: "column",
     gap: "16px",
-    justifyContent: "space-between",
   },
   statCard: {
-    background: "#ffffff",
+    background: "rgba(22, 23, 43, 0.75)",
+    backdropFilter: "blur(20px)",
     padding: "20px 24px",
-    borderRadius: "20px",
-    border: "1px solid #e2e8f0",
+    borderRadius: "16px",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
     display: "flex",
     alignItems: "center",
     gap: "20px",
@@ -669,10 +667,10 @@ const styles = {
     alignItems: "center",
     width: "100%",
   },
-  trendingUpTag: {
-    background: "#dcfce7",
-    color: "#15803d",
-    fontSize: "11px",
+  tagLive: {
+    background: "rgba(16, 185, 129, 0.15)",
+    color: "#34d399",
+    fontSize: "10px",
     fontWeight: "700",
     padding: "2px 8px",
     borderRadius: "6px",
@@ -680,28 +678,18 @@ const styles = {
     alignItems: "center",
     gap: "4px",
   },
-  trendingDownTag: {
-    background: "#fee2e2",
-    color: "#b91c1c",
-    fontSize: "11px",
-    fontWeight: "700",
-    padding: "2px 8px",
-    borderRadius: "6px",
-  },
-  stableTag: {
-    background: "#f1f5f9",
-    color: "#475569",
-    fontSize: "11px",
+  tagActive: {
+    background: "rgba(99, 102, 241, 0.15)",
+    color: "#a5b4fc",
+    fontSize: "10px",
     fontWeight: "700",
     padding: "2px 8px",
     borderRadius: "6px",
   },
   chartCard: {
-    background: "#ffffff",
-    borderRadius: "24px",
-    border: "1px solid #e2e8f0",
-    padding: "28px",
-    boxShadow: "0 4px 20px -2px rgba(0, 0, 0, 0.02)",
+    borderRadius: "16px",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
+    padding: "24px 28px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
@@ -710,39 +698,36 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "14px",
-    marginBottom: "20px",
+    marginBottom: "16px",
   },
   chartHeaderIcon: {
-    width: "44px",
-    height: "44px",
-    borderRadius: "12px",
-    background: "#faf5ff",
-    color: "#a855f7",
+    width: "40px",
+    height: "40px",
+    borderRadius: "10px",
+    background: "rgba(168, 85, 247, 0.15)",
+    color: "#c084fc",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "18px",
+    fontSize: "16px",
   },
   chartTitle: {
-    fontSize: "18px",
-    fontWeight: "800",
-    color: "#0f172a",
+    fontSize: "16px",
+    fontWeight: "700",
+    color: "#ffffff",
     margin: 0,
   },
   chartSubtitle: {
-    fontSize: "13px",
-    color: "#64748b",
+    fontSize: "12px",
+    color: "#9ca3af",
     margin: 0,
-    marginTop: "2px",
-    fontWeight: "500",
   },
   chartContainer: {
     display: "flex",
     justifyContent: "space-around",
     alignItems: "flex-end",
-    height: "140px",
-    paddingTop: "20px",
-    borderBottom: "2px solid #f1f5f9",
+    height: "125px",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
   },
   chartColumnLayout: {
     display: "flex",
@@ -751,10 +736,10 @@ const styles = {
     width: "60px",
   },
   chartTrack: {
-    width: "16px",
-    height: "90px",
-    background: "#f1f5f9",
-    borderRadius: "30px",
+    width: "12px",
+    height: "80px",
+    background: "rgba(255,255,255,0.05)",
+    borderRadius: "20px",
     position: "relative",
     display: "flex",
     alignItems: "flex-end",
@@ -762,100 +747,121 @@ const styles = {
   },
   chartBarFilled: {
     width: "100%",
-    borderRadius: "30px",
+    borderRadius: "20px",
   },
   chartLabelText: {
-    fontSize: "12px",
-    fontWeight: "700",
-    color: "#475569",
-    marginTop: "10px",
+    fontSize: "11px",
+    fontWeight: "600",
+    color: "#9ca3af",
+    marginTop: "8px",
   },
   chartValueLabel: {
-    fontSize: "11px",
+    fontSize: "10px",
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#6b7280",
     marginTop: "2px",
+  },
+  dashboardImageCard: {
+    borderRadius: "16px",
+    overflow: "hidden",
+    position: "relative",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+    background: "#16172b",
+  },
+  dashboardCardImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    opacity: 0.45,
+    display: "block",
+  },
+  dashboardImageOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: "20px",
+    background: "linear-gradient(to top, rgba(11,12,22,1) 10%, rgba(11,12,22,0.4) 70%, transparent)",
+  },
+  imageOverlayTitle: {
+    fontSize: "15px",
+    fontWeight: "700",
+    color: "#ffffff",
+    margin: 0,
+  },
+  imageOverlaySub: {
+    fontSize: "12px",
+    color: "#9ca3af",
+    margin: 0,
+    marginTop: "4px",
+    lineHeight: "1.4",
   },
   statIconBlue: {
-    width: "52px",
-    height: "52px",
-    borderRadius: "14px",
-    background: "rgba(79, 70, 229, 0.08)",
-    color: "#4f46e5",
+    width: "48px",
+    height: "48px",
+    borderRadius: "12px",
+    background: "rgba(99, 102, 241, 0.15)",
+    color: "#818cf8",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    fontSize: "20px",
-    flexShrink: 0,
+    fontSize: "18px",
   },
   statIconGreen: {
-    width: "52px",
-    height: "52px",
-    borderRadius: "14px",
-    background: "rgba(22, 163, 74, 0.08)",
-    color: "#16a34a",
+    width: "48px",
+    height: "48px",
+    borderRadius: "12px",
+    background: "rgba(16, 185, 129, 0.15)",
+    color: "#34d399",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    fontSize: "20px",
-    flexShrink: 0,
-  },
-  statIconOrange: {
-    width: "52px",
-    height: "52px",
-    borderRadius: "14px",
-    background: "rgba(217, 119, 6, 0.08)",
-    color: "#d97706",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: "20px",
-    flexShrink: 0,
+    fontSize: "18px",
   },
   statValue: {
-    fontSize: "26px",
+    fontSize: "24px",
     fontWeight: "800",
-    color: "#0f172a",
+    color: "#ffffff",
     margin: 0,
-    letterSpacing: "-0.01em",
-    marginTop: "2px",
+    marginTop: "4px",
   },
   statLabel: {
-    color: "#64748b",
+    color: "#9ca3af",
     margin: 0,
-    fontSize: "13px",
-    fontWeight: "600",
+    fontSize: "11px",
+    fontWeight: "700",
   },
   searchContainer: {
-    background: "#ffffff",
-    borderRadius: "16px",
-    border: "1px solid #e2e8f0",
+    background: "rgba(22, 23, 43, 0.65)",
+    backdropFilter: "blur(20px)",
+    borderRadius: "12px",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
     padding: "14px 20px",
     display: "flex",
     alignItems: "center",
     gap: "12px",
-    marginBottom: "32px",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.02)",
+    marginBottom: "28px",
   },
   searchIcon: {
-    color: "#94a3b8",
-    fontSize: "16px",
+    color: "#6b7280",
+    fontSize: "15px",
   },
   searchInput: {
     border: "none",
     outline: "none",
     width: "100%",
-    fontSize: "15px",
-    color: "#0f172a",
-    fontWeight: "500",
+    fontSize: "14px",
+    color: "#ffffff",
+    background: "transparent",
   },
   tableWrapper: {
     width: "100%",
     overflowX: "auto",
-    background: "#ffffff",
-    borderRadius: "20px",
-    border: "1px solid #e2e8f0",
-    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.02)",
+    background: "rgba(22, 23, 43, 0.65)",
+    backdropFilter: "blur(20px)",
+    borderRadius: "16px",
+    border: "1px solid rgba(255, 255, 255, 0.05)",
   },
   table: {
     width: "100%",
@@ -865,33 +871,31 @@ const styles = {
   th: {
     textAlign: "left",
     padding: "16px 20px",
-    background: "#f8fafc",
-    color: "#475569",
-    fontSize: "13px",
+    background: "rgba(255, 255, 255, 0.02)",
+    color: "#9ca3af",
+    fontSize: "12px",
     fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: "0.03em",
-    borderBottom: "1px solid #e2e8f0",
+    borderBottom: "1px solid rgba(255,255,255,0.05)",
   },
   tr: {
-    borderBottom: "1px solid #f1f5f9",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.03)",
   },
   td: {
-    padding: "18px 20px",
-    color: "#334155",
-    fontSize: "15px",
-    verticalAlign: "middle",
+    padding: "16px 20px",
+    color: "#d1d5db",
+    fontSize: "14px",
   },
   methodBadge: {
     padding: "4px 10px",
-    borderRadius: "8px",
-    fontSize: "12px",
+    borderRadius: "6px",
+    fontSize: "11px",
     fontWeight: "700",
   },
   status: {
-    padding: "6px 12px",
-    borderRadius: "30px",
-    fontSize: "12px",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    fontSize: "11px",
     fontWeight: "700",
   },
   actionContainer: {
@@ -900,29 +904,27 @@ const styles = {
   },
   viewButton: {
     border: "none",
-    background: "#f1f5f9",
-    color: "#4f46e5",
-    width: "36px",
-    height: "36px",
-    borderRadius: "10px",
+    background: "rgba(255,255,255,0.05)",
+    color: "#818cf8",
+    width: "34px",
+    height: "34px",
+    borderRadius: "8px",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "14px",
   },
   deleteButton: {
     border: "none",
-    background: "#fff1f2",
-    color: "#dc2626",
-    width: "36px",
-    height: "36px",
-    borderRadius: "10px",
+    background: "rgba(239,68,68,0.1)",
+    color: "#f87171",
+    width: "34px",
+    height: "34px",
+    borderRadius: "8px",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "14px",
   },
   modalOverlay: {
     position: "fixed",
@@ -930,160 +932,188 @@ const styles = {
     left: 0,
     width: "100%",
     height: "100%",
-    background: "rgba(15, 23, 42, 0.3)",
-    backdropFilter: "blur(6px)",
+    background: "rgba(5, 6, 12, 0.6)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
+    animation: "backdropFade 0.25s ease forwards",
   },
   modal: {
     width: "92%",
     maxWidth: "440px",
-    background: "#ffffff",
-    padding: "36px",
-    borderRadius: "24px",
-    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)",
-    boxSizing: "border-box",
+    background: "#15162a",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "20px",
+    boxShadow: "0 30px 60px rgba(0, 0, 0, 0.5)",
+    overflow: "hidden",
+    animation: "modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+  },
+  modalBannerImage: {
+    width: "100%",
+    height: "130px",
+    objectFit: "cover",
+    display: "block",
   },
   modalTitle: {
-    fontSize: "24px",
+    fontSize: "22px",
     fontWeight: "800",
-    marginBottom: "24px",
-    color: "#0f172a",
+    marginBottom: "20px",
+    color: "#ffffff",
     margin: 0,
-    letterSpacing: "-0.01em",
   },
   fieldLabel: {
     display: "block",
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#475569",
-    marginBottom: "8px",
-    letterSpacing: "0.01em",
+    fontSize: "11px",
+    fontWeight: "700",
+    color: "#9ca3af",
+    marginBottom: "6px",
   },
   modalInput: {
     width: "100%",
-    padding: "12px 16px",
-    border: "1px solid #e2e8f0",
-    borderRadius: "12px",
-    marginBottom: "20px",
+    padding: "11px 14px",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "10px",
+    marginBottom: "18px",
     outline: "none",
-    fontSize: "15px",
+    fontSize: "14px",
     boxSizing: "border-box",
-    background: "#f8fafc",
-    color: "#0f172a",
-    fontWeight: "500",
+    background: "#1d1f3b",
+    color: "#ffffff",
   },
   modalBtnContainer: {
     display: "flex",
     justifyContent: "flex-end",
     gap: "12px",
-    marginTop: "8px",
   },
   cancelBtn: {
-    padding: "14px 22px",
+    padding: "12px 20px",
     border: "none",
-    borderRadius: "12px",
-    background: "#f1f5f9",
+    borderRadius: "10px",
+    background: "rgba(255,255,255,0.05)",
     cursor: "pointer",
     fontWeight: "600",
-    color: "#475569",
-    fontSize: "15px",
+    color: "#d1d5db",
   },
   createBtn: {
-    padding: "14px 24px",
+    padding: "12px 22px",
     border: "none",
-    borderRadius: "12px",
-    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+    borderRadius: "10px",
+    background: "#6366f1",
     color: "white",
     cursor: "pointer",
     fontWeight: "700",
-    fontSize: "15px",
-    boxShadow: "0 4px 14px rgba(79, 70, 229, 0.35)",
   },
   viewModal: {
     width: "92%",
-    maxWidth: "520px",
-    background: "#ffffff",
-    padding: "36px",
-    borderRadius: "28px",
+    maxWidth: "740px",
+    background: "#15162a",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "24px",
+    boxShadow: "0 30px 60px rgba(0, 0, 0, 0.6)",
+    display: "flex",
+    overflow: "hidden",
+    animation: "modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+  },
+  viewModalImageSide: {
+    width: "38%",
     position: "relative",
-    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.2)",
-    boxSizing: "border-box",
+    background: "#0b0c16",
+  },
+  viewSideImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block",
+  },
+  imageOverlayGradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "linear-gradient(to right, transparent, #15162a)",
+  },
+  imageTextBadge: {
+    position: "absolute",
+    bottom: "24px",
+    left: "24px",
+    background: "rgba(16, 185, 129, 0.2)",
+    border: "1px solid rgba(16, 185, 129, 0.4)",
+    color: "#34d399",
+    fontSize: "10px",
+    fontWeight: "800",
+    padding: "4px 10px",
+    borderRadius: "6px",
+  },
+  viewModalContentSide: {
+    flex: 1,
+    padding: "36px",
+    position: "relative",
   },
   closeBtn: {
     position: "absolute",
-    top: "20px",
-    right: "20px",
+    top: "24px",
+    right: "24px",
+    background: "rgba(255, 255, 255, 0.05)",
     border: "none",
-    background: "#f1f5f9",
-    width: "38px",
-    height: "38px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    color: "#475569",
+    color: "#9ca3af",
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    transition: "background 0.2s",
+    cursor: "pointer",
   },
   viewHeader: {
     display: "flex",
     alignItems: "center",
-    gap: "18px",
-    marginBottom: "30px",
+    gap: "16px",
+    marginBottom: "32px",
   },
   viewIcon: {
-    width: "64px",
-    height: "64px",
-    borderRadius: "16px",
-    background: "rgba(79, 70, 229, 0.08)",
-    color: "#4f46e5",
+    width: "44px",
+    height: "44px",
+    borderRadius: "12px",
+    background: "rgba(99, 102, 241, 0.15)",
+    color: "#818cf8",
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
-    fontSize: "24px",
-    flexShrink: 0,
+    justifyContent: "center",
+    fontSize: "18px",
   },
   viewTitle: {
-    fontSize: "24px",
+    fontSize: "20px",
     fontWeight: "800",
-    color: "#0f172a",
+    color: "#ffffff",
     margin: 0,
-    letterSpacing: "-0.01em",
   },
   viewSub: {
-    color: "#64748b",
-    fontSize: "14px",
+    fontSize: "12px",
+    color: "#9ca3af",
     margin: 0,
-    marginTop: "4px",
-    fontWeight: "500",
   },
   detailsContainer: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: "16px",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "24px 20px",
   },
   detailBox: {
-    background: "#f8fafc",
-    border: "1px solid #e2e8f0",
-    padding: "16px",
-    borderRadius: "16px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
   },
   detailLabel: {
-    display: "block",
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#64748b",
+    fontSize: "10px",
+    fontWeight: "700",
+    color: "#6b7280",
     textTransform: "uppercase",
-    letterSpacing: "0.02em",
-    marginBottom: "4px",
   },
   detailValue: {
-    fontSize: "16px",
-    fontWeight: "700",
-    color: "#1e293b",
+    fontSize: "15px",
+    fontWeight: "600",
+    color: "#e5e7eb",
     margin: 0,
   },
 };
